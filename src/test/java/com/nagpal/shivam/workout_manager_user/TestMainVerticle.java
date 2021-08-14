@@ -1,4 +1,4 @@
-package com.nagpal.shivam.workout_manager_authentication;
+package com.nagpal.shivam.workout_manager_user;
 
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
