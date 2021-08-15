@@ -1,0 +1,17 @@
+package com.nagpal.shivam.workout_manager_user.exceptions;
+
+import lombok.Getter;
+
+@Getter
+public class ResponseException extends AppException {
+  private final int status;
+  private final String message;
+  private final Object payload;
+
+  public ResponseException(int status, String message, Object payload) {
+    super(message);
+    this.status = status;
+    this.message = message;
+    this.payload = payload;
+  }
+}

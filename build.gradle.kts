@@ -16,8 +16,9 @@ repositories {
 
 val vertxVersion = "4.1.2"
 val junitJupiterVersion = "5.7.0"
+val lombokVersion = "1.18.20"
 
-val mainVerticleName = "com.nagpal.shivam.workout_manager_authentication.MainVerticle"
+val mainVerticleName = "com.nagpal.shivam.workout_manager_user.MainVerticle"
 val launcherClassName = "io.vertx.core.Launcher"
 
 val watchForChange = "src/**/*"
@@ -33,8 +34,13 @@ dependencies {
   implementation("io.vertx:vertx-web-validation")
   implementation("io.vertx:vertx-pg-client")
   implementation("io.vertx:vertx-mail-client")
+  compileOnly("org.projectlombok:lombok:$lombokVersion")
+  annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+  testCompileOnly("org.projectlombok:lombok:$lombokVersion")
+  testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 }
 
 java {
