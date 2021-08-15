@@ -31,7 +31,6 @@ public class Main {
         if (missingConfigs.length != 0) {
           String message =
             MessageFormat.format(MessageConstants.MANDATORY_CONFIGS_ARE_NOT_FOUND, Arrays.toString(missingConfigs));
-          logger.log(Level.SEVERE, message);
           return Future.failedFuture(new AppException(message));
         }
         DeploymentOptions mainDeploymentOptions = new DeploymentOptions()
