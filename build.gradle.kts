@@ -18,10 +18,8 @@ val vertxVersion = "4.1.2"
 val junitJupiterVersion = "5.7.0"
 val lombokVersion = "1.18.20"
 
-val mainVerticleName = "com.nagpal.shivam.workout_manager_user.MainVerticle"
-val launcherClassName = "io.vertx.core.Launcher"
+val launcherClassName = "com.nagpal.shivam.workout_manager_user.Main"
 
-val watchForChange = "src/**/*"
 val doOnChange = "${projectDir}/gradlew classes"
 
 application {
@@ -51,9 +49,6 @@ java {
 
 tasks.withType<ShadowJar> {
   archiveClassifier.set("fat")
-  manifest {
-    attributes(mapOf("Main-Verticle" to mainVerticleName))
-  }
   mergeServiceFiles()
 }
 
@@ -62,14 +57,4 @@ tasks.withType<Test> {
   testLogging {
     events = setOf(PASSED, SKIPPED, FAILED)
   }
-}
-
-tasks.withType<JavaExec> {
-  args = listOf(
-    "run",
-    mainVerticleName,
-    "--redeploy=$watchForChange",
-    "--launcher-class=$launcherClassName",
-    "--on-redeploy=$doOnChange"
-  )
 }

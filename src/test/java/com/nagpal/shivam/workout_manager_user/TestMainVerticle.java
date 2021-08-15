@@ -1,5 +1,6 @@
 package com.nagpal.shivam.workout_manager_user;
 
+import com.nagpal.shivam.workout_manager_user.verticles.MainVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;

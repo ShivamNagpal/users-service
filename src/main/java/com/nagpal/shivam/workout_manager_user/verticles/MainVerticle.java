@@ -1,4 +1,4 @@
-package com.nagpal.shivam.workout_manager_user;
+package com.nagpal.shivam.workout_manager_user.verticles;
 
 import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
 import com.nagpal.shivam.workout_manager_user.exceptions.AppException;
@@ -27,28 +27,36 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) {
-    this.getConfiguration(vertx).compose(config -> {
-      String[] missingConfigs = validateMandatoryConfigs(config);
-      if (missingConfigs.length != 0) {
-        String message =
-          MessageFormat.format(MessageConstants.MANDATORY_CONFIGS_ARE_NOT_FOUND, Arrays.toString(missingConfigs));
-        logger.log(Level.SEVERE, message);
-        return Future.failedFuture(new AppException(message));
-      }
-      return this.setupHttpServer(vertx, config);
-    }).onSuccess(a -> startPromise.complete()).onFailure(startPromise::fail);
+    this.getConfiguration(vertx)
+      .compose(config -> {
+        String[] missingConfigs = validateMandatoryConfigs(config);
+        if (missingConfigs.length != 0) {
+          String message =
+            MessageFormat.format(MessageConstants.MANDATORY_CONFIGS_ARE_NOT_FOUND, Arrays.toString(missingConfigs));
+          logger.log(Level.SEVERE, message);
+          return Future.failedFuture(new AppException(message));
+        }
+        return this.setupHttpServer(vertx, config);
+      })
+      .onSuccess(a -> startPromise.complete())
+      .onFailure(startPromise::fail);
   }
 
   private Future<JsonObject> getConfiguration(Vertx vertx) {
-    ConfigStoreOptions configFileOptions = new ConfigStoreOptions().setType("file")
+    ConfigStoreOptions configFileOptions = new ConfigStoreOptions()
+      .setType(Constants.FILE)
       .setConfig(new JsonObject().put(Constants.PATH, ConfigurationConstants.CONFIG_JSON_PATH));
 
-    ConfigStoreOptions configSysOptions = new ConfigStoreOptions().setType(Constants.SYS);
+    ConfigStoreOptions configSysOptions = new ConfigStoreOptions()
+      .setType(Constants.SYS);
 
-    ConfigStoreOptions configEnvOptions = new ConfigStoreOptions().setType(Constants.ENV);
+    ConfigStoreOptions configEnvOptions = new ConfigStoreOptions()
+      .setType(Constants.ENV);
 
-    ConfigRetrieverOptions configRetrieverOptions =
-      new ConfigRetrieverOptions().addStore(configFileOptions).addStore(configSysOptions).addStore(configEnvOptions);
+    ConfigRetrieverOptions configRetrieverOptions = new ConfigRetrieverOptions()
+      .addStore(configFileOptions)
+      .addStore(configSysOptions)
+      .addStore(configEnvOptions);
 
     ConfigRetriever configRetriever = ConfigRetriever.create(vertx, configRetrieverOptions);
     return configRetriever.getConfig();
@@ -69,16 +77,18 @@ public class MainVerticle extends AbstractVerticle {
     Promise<Void> promise = Promise.promise();
     Integer serverPort = config.getInteger(ConfigurationConstants.SERVER_PORT);
     Router mainRouter = Router.router(vertx);
-    vertx.createHttpServer().requestHandler(mainRouter).listen(serverPort, http -> {
-      if (http.succeeded()) {
-        logger.log(Level.INFO,
-          MessageFormat.format(MessageConstants.SERVER_STARTED_ON_PORT, String.valueOf(serverPort)));
-        initComponents(vertx, mainRouter);
-        promise.complete();
-      } else {
-        promise.fail(http.cause());
-      }
-    });
+    vertx.createHttpServer()
+      .requestHandler(mainRouter)
+      .listen(serverPort, http -> {
+        if (http.succeeded()) {
+          logger.log(Level.INFO,
+            MessageFormat.format(MessageConstants.SERVER_STARTED_ON_PORT, String.valueOf(serverPort)));
+          initComponents(vertx, mainRouter);
+          promise.complete();
+        } else {
+          promise.fail(http.cause());
+        }
+      });
     return promise.future();
   }
 

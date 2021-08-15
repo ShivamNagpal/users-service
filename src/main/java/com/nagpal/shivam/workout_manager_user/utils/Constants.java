@@ -4,4 +4,5 @@ public interface Constants {
   String PATH = "path";
   String SYS = "sys";
   String ENV = "env";
+  String FILE = "file";
 }
