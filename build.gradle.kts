@@ -34,6 +34,7 @@ dependencies {
   implementation("io.vertx:vertx-web-validation")
   implementation("io.vertx:vertx-pg-client")
   implementation("io.vertx:vertx-mail-client")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
   compileOnly("org.projectlombok:lombok:$lombokVersion")
   annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
