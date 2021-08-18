@@ -4,14 +4,14 @@ import lombok.Getter;
 
 @Getter
 public class ResponseException extends AppException {
-  private final int status;
-  private final String message;
-  private final Object payload;
+    private final int status;
+    private final String message;
+    private final Object payload;
 
-  public ResponseException(int status, String message, Object payload) {
-    super(message);
-    this.status = status;
-    this.message = message;
-    this.payload = payload;
-  }
+    public ResponseException(int status, String message, Object payload) {
+        super(message);
+        this.status = status;
+        this.message = message;
+        this.payload = payload;
+    }
 }

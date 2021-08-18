@@ -9,17 +9,19 @@ import io.vertx.core.json.Json;
 
 public class GlobalExceptionHandler {
 
-  public static void handle(Throwable throwable, HttpServerResponse httpServerResponse) {
-    if (throwable instanceof ResponseException) {
-      ResponseException responseException = (ResponseException) throwable;
-      ResponseWrapper<Object> failureResponseWrapper =
-        ResponseWrapper.failure(responseException.getPayload(), responseException.getMessage());
-      httpServerResponse.setStatusCode(responseException.getStatus()).end(Json.encodePrettily(failureResponseWrapper));
-    } else {
-      HttpResponseStatus internalServerError = HttpResponseStatus.INTERNAL_SERVER_ERROR;
-      ResponseWrapper<Object> failureResponseWrapper =
-        ResponseWrapper.failure(null, internalServerError.reasonPhrase());
-      httpServerResponse.setStatusCode(internalServerError.code()).end(Json.encodePrettily(failureResponseWrapper));
+    public static void handle(Throwable throwable, HttpServerResponse httpServerResponse) {
+        if (throwable instanceof ResponseException) {
+            ResponseException responseException = (ResponseException) throwable;
+            ResponseWrapper<Object> failureResponseWrapper =
+                    ResponseWrapper.failure(responseException.getPayload(), responseException.getMessage());
+            httpServerResponse.setStatusCode(responseException.getStatus())
+                    .end(Json.encodePrettily(failureResponseWrapper));
+        } else {
+            HttpResponseStatus internalServerError = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+            ResponseWrapper<Object> failureResponseWrapper =
+                    ResponseWrapper.failure(null, internalServerError.reasonPhrase());
+            httpServerResponse.setStatusCode(internalServerError.code())
+                    .end(Json.encodePrettily(failureResponseWrapper));
+        }
     }
-  }
 }

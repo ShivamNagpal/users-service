@@ -6,16 +6,16 @@ import io.vertx.ext.web.Router;
 
 public class HealthController {
 
-  public HealthController(Vertx vertx, Router mainRouter) {
-    Router router = Router.router(vertx);
-    mainRouter.mountSubRouter("/health", router);
-    setupEndpoints(router);
-  }
+    public HealthController(Vertx vertx, Router mainRouter) {
+        Router router = Router.router(vertx);
+        mainRouter.mountSubRouter("/health", router);
+        setupEndpoints(router);
+    }
 
-  private void setupEndpoints(Router router) {
-    router.route().handler(routingContext -> {
-      HttpResponseStatus okResponseStatus = HttpResponseStatus.OK;
-      routingContext.response().setStatusCode(okResponseStatus.code()).end(okResponseStatus.reasonPhrase());
-    });
-  }
+    private void setupEndpoints(Router router) {
+        router.route().handler(routingContext -> {
+            HttpResponseStatus okResponseStatus = HttpResponseStatus.OK;
+            routingContext.response().setStatusCode(okResponseStatus.code()).end(okResponseStatus.reasonPhrase());
+        });
+    }
 }
