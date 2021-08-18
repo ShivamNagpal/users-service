@@ -5,4 +5,5 @@ public interface MessageConstants {
     String MANDATORY_CONFIGS_ARE_NOT_FOUND = "Mandatory Configs are not found: {0}";
     String SUCCESSFULLY_DEPLOYED_THE_VERTICLES = "Successfully deployed the Verticles";
     String STARTING_VERTICLE = "Starting verticle \"{0}\"";
+    String SHUTTING_DOWN_THE_VERT_X = "Shutting down the Vert.x";
 }

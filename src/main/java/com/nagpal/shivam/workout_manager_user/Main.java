@@ -2,20 +2,15 @@ package com.nagpal.shivam.workout_manager_user;
 
 import com.nagpal.shivam.workout_manager_user.exceptions.AppException;
 import com.nagpal.shivam.workout_manager_user.utils.ConfigurationConstants;
-import com.nagpal.shivam.workout_manager_user.utils.Constants;
+import com.nagpal.shivam.workout_manager_user.utils.ConfigurationUtils;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import com.nagpal.shivam.workout_manager_user.verticles.MainVerticle;
-import io.vertx.config.ConfigRetriever;
-import io.vertx.config.ConfigRetrieverOptions;
-import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,9 +21,9 @@ public class Main {
         Vertx vertx = Vertx.vertx();
 
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-        getConfiguration(vertx)
+        ConfigurationUtils.getConfiguration(vertx)
                 .compose(config -> {
-                    String[] missingConfigs = validateMandatoryConfigs(config);
+                    String[] missingConfigs = ConfigurationUtils.validateMandatoryConfigs(config);
                     if (missingConfigs.length != 0) {
                         String message =
                                 MessageFormat.format(MessageConstants.MANDATORY_CONFIGS_ARE_NOT_FOUND,
@@ -55,39 +50,9 @@ public class Main {
             @Override
             public void run() {
                 super.run();
-                logger.log(Level.INFO, "Shutting down the Vert.x");
+                logger.log(Level.INFO, MessageConstants.SHUTTING_DOWN_THE_VERT_X);
                 vertx.close();
             }
         });
-    }
-
-    private static Future<JsonObject> getConfiguration(Vertx vertx) {
-        ConfigStoreOptions configFileOptions = new ConfigStoreOptions()
-                .setType(Constants.FILE)
-                .setConfig(new JsonObject().put(Constants.PATH, ConfigurationConstants.CONFIG_JSON_PATH));
-
-        ConfigStoreOptions configEnvOptions = new ConfigStoreOptions()
-                .setType(Constants.ENV);
-
-        ConfigStoreOptions configSysOptions = new ConfigStoreOptions()
-                .setType(Constants.SYS);
-
-        ConfigRetrieverOptions configRetrieverOptions = new ConfigRetrieverOptions()
-                .addStore(configFileOptions)
-                .addStore(configEnvOptions)
-                .addStore(configSysOptions);
-
-        ConfigRetriever configRetriever = ConfigRetriever.create(vertx, configRetrieverOptions);
-        return configRetriever.getConfig();
-    }
-
-    private static String[] validateMandatoryConfigs(JsonObject config) {
-        LinkedList<String> keys = new LinkedList<>();
-        for (String key : ConfigurationConstants.MANDATORY_CONFIGS) {
-            if (!config.containsKey(key)) {
-                keys.add(key);
-            }
-        }
-        return keys.toArray(new String[0]);
     }
 }
