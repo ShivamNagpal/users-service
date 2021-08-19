@@ -6,4 +6,5 @@ public interface MessageConstants {
     String SUCCESSFULLY_DEPLOYED_THE_VERTICLES = "Successfully deployed the Verticles";
     String STARTING_VERTICLE = "Starting verticle \"{0}\"";
     String SHUTTING_DOWN_THE_VERT_X = "Shutting down the Vert.x";
+    String SUCCESSFULLY_CONNECTED_TO_THE_POSTGRESQL_DATABASE = "Successfully connected to the Postgresql Database";
 }

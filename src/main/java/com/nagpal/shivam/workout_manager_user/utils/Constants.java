@@ -5,4 +5,5 @@ public interface Constants {
     String SYS = "sys";
     String ENV = "env";
     String FILE = "file";
+    String CONFIG_JSON_PATH = "config.json";
 }

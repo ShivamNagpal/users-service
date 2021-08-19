@@ -1,10 +1,11 @@
 package com.nagpal.shivam.workout_manager_user;
 
+import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.exceptions.AppException;
-import com.nagpal.shivam.workout_manager_user.utils.ConfigurationConstants;
 import com.nagpal.shivam.workout_manager_user.utils.ConfigurationUtils;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
-import com.nagpal.shivam.workout_manager_user.verticles.MainVerticle;
+import com.nagpal.shivam.workout_manager_user.verticles.DatabaseVerticle;
+import com.nagpal.shivam.workout_manager_user.verticles.HttpVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -23,6 +24,8 @@ public class Main {
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         ConfigurationUtils.getConfiguration(vertx)
                 .compose(config -> {
+                    ConfigurationUtils.correctConfigCasing(config);
+                    ConfigurationUtils.normalizeKeys(config);
                     String[] missingConfigs = ConfigurationUtils.validateMandatoryConfigs(config);
                     if (missingConfigs.length != 0) {
                         String message =
@@ -30,13 +33,22 @@ public class Main {
                                         Arrays.toString(missingConfigs));
                         return Future.failedFuture(new AppException(message));
                     }
-                    DeploymentOptions mainDeploymentOptions = new DeploymentOptions()
+                    DeploymentOptions httpDeploymentOptions = new DeploymentOptions()
                             .setInstances(availableProcessors)
                             .setConfig(config);
-                    return vertx.deployVerticle(MainVerticle.class.getName(), mainDeploymentOptions)
+                    return vertx.deployVerticle(HttpVerticle.class.getName(), httpDeploymentOptions)
                             .onSuccess(result -> logger.log(Level.INFO,
                                     MessageFormat.format(MessageConstants.SERVER_STARTED_ON_PORT,
-                                            String.valueOf(config.getInteger(ConfigurationConstants.SERVER_PORT)))));
+                                            String.valueOf(config.getInteger(Configuration.SERVER_PORT.getKey())))))
+                            .compose(result -> {
+                                DeploymentOptions databaseDeploymentOptions = new DeploymentOptions()
+                                        .setInstances(availableProcessors)
+                                        .setConfig(config);
+                                return vertx.deployVerticle(DatabaseVerticle.class.getName(),
+                                                databaseDeploymentOptions)
+                                        .onSuccess(dbDepId -> logger.log(Level.INFO,
+                                                MessageConstants.SUCCESSFULLY_CONNECTED_TO_THE_POSTGRESQL_DATABASE));
+                            });
                 })
                 .onSuccess(result -> {
                     logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_DEPLOYED_THE_VERTICLES);
