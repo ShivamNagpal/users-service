@@ -8,6 +8,7 @@ public class MessageConstants {
     public static final String SHUTTING_DOWN_THE_VERT_X = "Shutting down the Vert.x";
     public static final String SUCCESSFULLY_CONNECTED_TO_THE_POSTGRESQL_DATABASE =
             "Successfully connected to the Postgresql Database";
+    public static final String SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE = "Successfully created SqlClient instance";
 
     private MessageConstants() {
     }

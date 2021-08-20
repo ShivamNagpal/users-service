@@ -1,8 +1,11 @@
 package com.nagpal.shivam.workout_manager_user.utils;
 
 import io.vertx.core.Future;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class DbUtils {
     private DbUtils() {
@@ -12,5 +15,30 @@ public class DbUtils {
         return sqlClient.preparedQuery(query)
                 .execute(tuple)
                 .compose(rs -> Future.succeededFuture());
+    }
+
+    public static <R> Future<Optional<R>> executeQueryAndReturnOne(SqlClient sqlClient, String query, Tuple tuple,
+                                                                   Function<Row, R> mapper) {
+        return sqlClient.preparedQuery(query)
+                .execute(tuple)
+                .map(rs -> {
+                    RowIterator<Row> iterator = rs.iterator();
+                    if (iterator.hasNext()) {
+                        return Optional.of(mapper.apply(iterator.next()));
+                    } else {
+                        return Optional.empty();
+                    }
+                });
+    }
+
+    public static <R> Future<List<R>> executeQueryAndReturnMany(SqlClient sqlClient, String query, Tuple tuple,
+                                                                Function<RowSet<Row>, List<R>> mapper) {
+        return sqlClient.preparedQuery(query)
+                .execute(tuple)
+                .map(mapper);
+    }
+
+    public static Future<Void> dbHealthCheck(SqlClient sqlClient) {
+        return executeQuery(sqlClient, Constants.SELECT_1, Tuple.tuple());
     }
 }

@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.configurations;
 
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
+import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
@@ -8,7 +9,11 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class DatabaseConfiguration {
+    private static final Logger logger = Logger.getLogger(DatabaseConfiguration.class.getName());
     private static volatile SqlClient sqlClient;
 
     private DatabaseConfiguration() {
@@ -27,6 +32,7 @@ public class DatabaseConfiguration {
                             .setCachePreparedStatements(true);
                     PoolOptions poolOptions = new PoolOptions();
                     sqlClient = PgPool.client(vertx, pgConnectOptions, poolOptions);
+                    logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE);
                 }
             }
         }
