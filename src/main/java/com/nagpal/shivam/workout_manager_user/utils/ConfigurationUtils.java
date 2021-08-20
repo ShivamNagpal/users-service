@@ -12,6 +12,9 @@ import java.util.LinkedList;
 
 public class ConfigurationUtils {
 
+    private ConfigurationUtils() {
+    }
+
     public static Future<JsonObject> getConfiguration(Vertx vertx) {
         ConfigStoreOptions configFileOptions = new ConfigStoreOptions()
                 .setType(Constants.FILE)
@@ -53,8 +56,7 @@ public class ConfigurationUtils {
 
     public static String[] validateMandatoryConfigs(JsonObject config) {
         LinkedList<String> keys = new LinkedList<>();
-        Configuration[] mandatoryConfigurations = Configuration.MANDATORY_CONFIGURATIONS;
-        for (Configuration configuration : mandatoryConfigurations) {
+        for (Configuration configuration : Configuration.MANDATORY_CONFIGURATIONS) {
             if (!config.containsKey(configuration.getKey())) {
                 keys.add(configuration.getKey());
             }

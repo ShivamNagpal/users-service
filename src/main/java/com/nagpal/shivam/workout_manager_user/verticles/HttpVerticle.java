@@ -2,6 +2,7 @@ package com.nagpal.shivam.workout_manager_user.verticles;
 
 import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
+import com.nagpal.shivam.workout_manager_user.services.HealthService;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -19,7 +20,9 @@ public class HttpVerticle extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) {
-        logger.info(MessageFormat.format(MessageConstants.STARTING_VERTICLE, this.getClass().getSimpleName()));
+        String startVerticleMessage =
+                MessageFormat.format(MessageConstants.STARTING_VERTICLE, this.getClass().getSimpleName());
+        logger.info(startVerticleMessage);
         this.setupHttpServer(vertx, this.config())
                 .onSuccess(a -> startPromise.complete())
                 .onFailure(startPromise::fail);
@@ -43,6 +46,7 @@ public class HttpVerticle extends AbstractVerticle {
     }
 
     private void initComponents(Vertx vertx, Router mainRouter) {
-        new HealthController(vertx, mainRouter);
+        HealthService healthService = new HealthService(vertx);
+        new HealthController(vertx, mainRouter, healthService);
     }
 }

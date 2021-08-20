@@ -8,6 +8,8 @@ import io.vertx.core.json.Json;
 
 
 public class GlobalExceptionHandler {
+    private GlobalExceptionHandler() {
+    }
 
     public static void handle(Throwable throwable, HttpServerResponse httpServerResponse) {
         if (throwable instanceof ResponseException) {

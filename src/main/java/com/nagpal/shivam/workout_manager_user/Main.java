@@ -50,9 +50,7 @@ public class Main {
                                                 MessageConstants.SUCCESSFULLY_CONNECTED_TO_THE_POSTGRESQL_DATABASE));
                             });
                 })
-                .onSuccess(result -> {
-                    logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_DEPLOYED_THE_VERTICLES);
-                })
+                .onSuccess(result -> logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_DEPLOYED_THE_VERTICLES))
                 .onFailure(throwable -> {
                     logger.log(Level.SEVERE, throwable.getMessage(), throwable);
                     vertx.close(ar -> System.exit(-1));

@@ -2,6 +2,8 @@ package com.nagpal.shivam.workout_manager_user.enums;
 
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
+
 public enum Configuration {
     SERVER_PORT("server.port", "SERVER_PORT"),
     PG_HOST("pg.host", "PG_HOST"),
@@ -10,8 +12,8 @@ public enum Configuration {
     PG_USERNAME("pg.username", "PG_USERNAME"),
     PG_PASSWORD("pg.password", "PG_PASSWORD"),
     ;
-    public static final Configuration[] MANDATORY_CONFIGURATIONS = {SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE,
-            PG_USERNAME, PG_PASSWORD};
+    public static final List<Configuration> MANDATORY_CONFIGURATIONS =
+            List.of(SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD);
     private final String sysKey;
     private final String envKey;
 

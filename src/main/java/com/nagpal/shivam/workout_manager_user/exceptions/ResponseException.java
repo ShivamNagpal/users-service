@@ -6,7 +6,7 @@ import lombok.Getter;
 public class ResponseException extends AppException {
     private final int status;
     private final String message;
-    private final Object payload;
+    private final transient Object payload;
 
     public ResponseException(int status, String message, Object payload) {
         super(message);

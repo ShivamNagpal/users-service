@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(VertxExtension.class)
-public class TestHttpVerticle {
+class TestHttpVerticle {
 
     @BeforeEach
     void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
@@ -17,7 +17,7 @@ public class TestHttpVerticle {
     }
 
     @Test
-    void verticle_deployed(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    void verticle_deployed(Vertx vertx, VertxTestContext testContext) {
         testContext.completeNow();
     }
 }
