@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.utils;
 
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
+import com.nagpal.shivam.workout_manager_user.exceptions.AppException;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -38,13 +39,19 @@ public class ConfigurationUtils {
     public static void correctConfigCasing(JsonObject config) {
         new LinkedList<>(config.fieldNames()).forEach(key -> {
             Object value = config.getValue(key);
+            String newKey;
             if (key.contains(".")) {
-                config.remove(key);
-                config.put(key.toLowerCase(), value);
+                newKey = key.toLowerCase();
             } else if (key.contains("_")) {
-                config.remove(key);
-                config.put(key.toUpperCase(), value);
+                newKey = key.toUpperCase();
+            } else {
+                newKey = key;
             }
+            config.remove(key);
+            if (config.containsKey(newKey)) {
+                throw new AppException(MessageConstants.DUPLICATE_CONFIG_KEYS_PROVIDED);
+            }
+            config.put(newKey, value);
         });
     }
 
