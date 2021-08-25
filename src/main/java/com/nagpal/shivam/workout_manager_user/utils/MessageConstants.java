@@ -10,6 +10,7 @@ public class MessageConstants {
             "Successfully connected to the Postgresql Database";
     public static final String SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE = "Successfully created SqlClient instance";
     public static final String DUPLICATE_CONFIG_KEYS_PROVIDED = "Duplicate config keys provided";
+    public static final String VERTX_ACTIVE_PROFILES = "Vertx active profiles: {0}";
 
     private MessageConstants() {
     }
