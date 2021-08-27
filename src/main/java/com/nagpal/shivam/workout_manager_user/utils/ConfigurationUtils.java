@@ -13,11 +13,10 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class ConfigurationUtils {
     private static final Logger logger = Logger.getLogger(ConfigurationUtils.class.getName());
@@ -101,24 +100,22 @@ public class ConfigurationUtils {
     }
 
     private static String[] checkForConfigurationProfiles() {
-        Map<String, String> propertiesKeyMap = System.getProperties().keySet().stream()
+        Optional<String> sysProfileFlagOptional = System.getProperties().keySet().stream()
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
-                .collect(Collectors.toMap(String::toLowerCase, Function.identity()));
-
+                .filter(key -> key.equalsIgnoreCase(Configuration.VERTX_PROFILES_ACTIVE.getKey()))
+                .findAny();
         String[] profiles = new String[0];
-        if (propertiesKeyMap.containsKey(Constants.SYS_KEY_VERTX_PROFILES_ACTIVE)) {
-            profiles = System.getProperty(propertiesKeyMap.get(Constants.SYS_KEY_VERTX_PROFILES_ACTIVE))
+        if (sysProfileFlagOptional.isPresent()) {
+            profiles = System.getProperty(sysProfileFlagOptional.get())
                     .split(Constants.PROFILES_SEPARATOR_REGEX_PATTERN);
         } else {
-            Map<String, String> envMap = System.getenv().entrySet().stream()
-                    .collect(Collectors.toMap(e -> e.getKey().toUpperCase(), Map.Entry::getValue));
-            if (envMap.containsKey(Constants.ENV_KEY_VERTX_PROFILES_ACTIVE)) {
-                profiles = envMap.get(Constants.ENV_KEY_VERTX_PROFILES_ACTIVE)
-                        .split(Constants.PROFILES_SEPARATOR_REGEX_PATTERN);
+            Optional<Map.Entry<String, String>> envProfileFlagOptional = System.getenv().entrySet().stream()
+                    .filter(e -> e.getKey().equalsIgnoreCase(Constants.ENV_KEY_VERTX_PROFILES_ACTIVE)).findAny();
+            if (envProfileFlagOptional.isPresent()) {
+                profiles = envProfileFlagOptional.get().getValue().split(Constants.PROFILES_SEPARATOR_REGEX_PATTERN);
             }
         }
-
         return profiles;
     }
 
