@@ -10,10 +10,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,14 +117,19 @@ public class ConfigurationUtils {
     }
 
     private static void correctCasingForConfig(JsonObject config, UnaryOperator<String> configMapper) {
+        Set<String> duplicateKeys = new HashSet<>();
         new LinkedList<>(config.fieldNames()).forEach(key -> {
             Object value = config.getValue(key);
             String newKey = configMapper.apply(key);
             config.remove(key);
             if (config.containsKey(newKey)) {
-                throw new AppException(MessageConstants.DUPLICATE_CONFIG_KEYS_PROVIDED);
+                duplicateKeys.add(newKey);
             }
             config.put(newKey, value);
         });
+        if (!duplicateKeys.isEmpty()) {
+            String message = MessageFormat.format(MessageConstants.DUPLICATE_CONFIG_KEYS_PROVIDED, duplicateKeys);
+            throw new AppException(message);
+        }
     }
 }
