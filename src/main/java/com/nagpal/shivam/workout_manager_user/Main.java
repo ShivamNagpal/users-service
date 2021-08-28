@@ -24,8 +24,6 @@ public class Main {
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         ConfigurationUtils.getConfiguration(vertx)
                 .compose(config -> {
-                    ConfigurationUtils.correctConfigCasing(config);
-                    ConfigurationUtils.normalizeKeys(config);
                     String[] missingConfigs = ConfigurationUtils.validateMandatoryConfigs(config);
                     if (missingConfigs.length != 0) {
                         String message =

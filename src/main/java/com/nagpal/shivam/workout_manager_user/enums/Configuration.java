@@ -1,10 +1,12 @@
 package com.nagpal.shivam.workout_manager_user.enums;
 
+import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
 public enum Configuration {
+    VERTX_PROFILES_ACTIVE("vertx.profiles.active", Constants.ENV_KEY_VERTX_PROFILES_ACTIVE),
     SERVER_PORT("server.port", "SERVER_PORT"),
     PG_HOST("pg.host", "PG_HOST"),
     PG_PORT("pg.port", "PG_PORT"),
