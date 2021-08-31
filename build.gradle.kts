@@ -15,7 +15,7 @@ repositories {
 }
 
 val vertxVersion = "4.1.2"
-val junitJupiterVersion = "5.7.0"
+val junitJupiterVersion = "5.7.2"
 val lombokVersion = "1.18.20"
 
 val launcherClassName = "com.nagpal.shivam.workout_manager_user.Main"
@@ -28,10 +28,10 @@ application {
 
 dependencies {
     implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
-    implementation("io.vertx:vertx-config")
-    implementation("io.vertx:vertx-web-validation")
-    implementation("io.vertx:vertx-pg-client")
-    implementation("io.vertx:vertx-mail-client")
+    implementation("io.vertx:vertx-config:$vertxVersion")
+    implementation("io.vertx:vertx-web-validation:$vertxVersion")
+    implementation("io.vertx:vertx-pg-client:$vertxVersion")
+    implementation("io.vertx:vertx-mail-client:$vertxVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
@@ -41,7 +41,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation("org.postgresql:postgresql:42.2.23")
 
-    testImplementation("io.vertx:vertx-junit5")
+    testImplementation("io.vertx:vertx-junit5:$vertxVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")

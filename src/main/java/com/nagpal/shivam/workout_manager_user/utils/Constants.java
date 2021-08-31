@@ -13,6 +13,7 @@ public class Constants {
     public static final String ENV_KEY_VERTX_PROFILES_ACTIVE = "VERTX_PROFILES_ACTIVE";
     public static final String PROFILES_SEPARATOR_REGEX_PATTERN = "\\s*,\\s*";
     public static final String JDBC_POSTGRESQL_URI = "jdbc:postgresql://{0}:{1}/{2}?useSSL=false";
+    public static final String AVAILABLE_PROCESSORS = "AVAILABLE_PROCESSORS";
 
     private Constants() {
     }
