@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.configurations;
 
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
+import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -8,7 +9,9 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
+import org.flywaydb.core.Flyway;
 
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,5 +40,20 @@ public class DatabaseConfiguration {
             }
         }
         return sqlClient;
+    }
+
+    public static void initFlyway(JsonObject config) {
+        String jdbcUri = MessageFormat.format(Constants.JDBC_POSTGRESQL_URI,
+                config.getString(Configuration.PG_HOST.getKey()),
+                config.getString(Configuration.PG_PORT.getKey()),
+                config.getString(Configuration.PG_DATABASE.getKey())
+        );
+        Flyway flyway =
+                Flyway.configure().dataSource(
+                        jdbcUri,
+                        config.getString(Configuration.PG_USERNAME.getKey()),
+                        config.getString(Configuration.PG_PASSWORD.getKey())
+                ).load();
+        flyway.migrate();
     }
 }
