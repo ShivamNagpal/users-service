@@ -5,6 +5,7 @@ import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
@@ -22,7 +23,7 @@ public class DatabaseConfiguration {
     private DatabaseConfiguration() {
     }
 
-    public static SqlClient getInstance(Vertx vertx, JsonObject config) {
+    public static SqlClient getSqlClient(Vertx vertx, JsonObject config) {
         if (sqlClient == null) {
             synchronized (DatabaseConfiguration.class) {
                 if (sqlClient == null) {
@@ -40,6 +41,13 @@ public class DatabaseConfiguration {
             }
         }
         return sqlClient;
+    }
+
+    public static MongoClient getMongoClient(Vertx vertx, JsonObject config) {
+        return MongoClient.createShared(vertx, new JsonObject()
+                .put(Constants.CONNECTION_STRING, config.getString(Configuration.MONGO_CONNECTION_STRING.getKey()))
+                .put(Constants.DB_NAME, config.getString(Configuration.MONGO_CONNECTION_DATABASE.getKey()))
+        );
     }
 
     public static void initFlyway(JsonObject config) {

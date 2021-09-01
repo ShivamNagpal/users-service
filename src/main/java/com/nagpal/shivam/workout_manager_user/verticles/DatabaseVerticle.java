@@ -7,6 +7,7 @@ import com.nagpal.shivam.workout_manager_user.utils.DbUtils;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.sqlclient.SqlClient;
 
 import java.text.MessageFormat;
@@ -32,23 +33,30 @@ public class DatabaseVerticle extends AbstractVerticle {
         String startVerticleMessage =
                 MessageFormat.format(MessageConstants.STARTING_VERTICLE, this.getClass().getSimpleName());
         logger.info(startVerticleMessage);
-        this.setupDatabase(vertx, this.config())
+        this.setupDatabases(vertx, this.config())
                 .onSuccess(a -> startPromise.complete())
                 .onFailure(startPromise::fail);
     }
 
-    private Future<Void> setupDatabase(Vertx vertx, JsonObject config) {
-        SqlClient sqlClient = DatabaseConfiguration.getInstance(vertx, config);
-        return DbUtils.dbHealthCheck(sqlClient)
-                .compose(v -> {
-                    setupDAOs(vertx, sqlClient);
+    private Future<Void> setupDatabases(Vertx vertx, JsonObject config) {
+        SqlClient sqlClient = DatabaseConfiguration.getSqlClient(vertx, config);
+        MongoClient mongoClient = DatabaseConfiguration.getMongoClient(vertx, config);
+        return CompositeFuture.all(DbUtils.sqlClientHealthCheck(sqlClient), DbUtils.mongoClientHealthCheck(mongoClient))
+                .compose(compositeFuture -> {
+                    setupDAOs(vertx, sqlClient, mongoClient);
                     return Future.succeededFuture();
                 });
     }
 
-    private void setupDAOs(Vertx vertx, SqlClient sqlClient) {
-        vertx.eventBus().consumer(DbEventAddress.DB_PG_HEALTH, event -> DbUtils.dbHealthCheck(sqlClient)
+    private void setupDAOs(Vertx vertx, SqlClient sqlClient, MongoClient mongoClient) {
+        vertx.eventBus().consumer(DbEventAddress.DB_PG_HEALTH, event -> DbUtils.sqlClientHealthCheck(sqlClient)
                 .onSuccess(v -> event.reply(true))
-                .onFailure(throwable -> event.reply(false)));
+                .onFailure(throwable -> event.reply(false))
+        );
+
+        vertx.eventBus().consumer(DbEventAddress.DB_MONGO_HEALTH, event -> DbUtils.mongoClientHealthCheck(mongoClient)
+                .onSuccess(v -> event.reply(true))
+                .onFailure(throwable -> event.reply(false))
+        );
     }
 }
