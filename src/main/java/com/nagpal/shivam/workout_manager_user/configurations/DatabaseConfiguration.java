@@ -3,6 +3,7 @@ package com.nagpal.shivam.workout_manager_user.configurations;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -63,5 +64,10 @@ public class DatabaseConfiguration {
                         config.getString(Configuration.PG_PASSWORD.getKey())
                 ).load();
         flyway.migrate();
+    }
+
+    public static Future<Void> verifyMongoIndices(Vertx vertx, JsonObject config) {
+        MongoClient mongoClient = getMongoClient(vertx, config);
+        return mongoClient.createIndex(Constants.SESSION, new JsonObject().put(Constants.USER_ID, 1));
     }
 }
