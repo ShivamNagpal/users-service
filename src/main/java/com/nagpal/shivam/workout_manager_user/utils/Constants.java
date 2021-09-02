@@ -14,6 +14,8 @@ public class Constants {
     public static final String PROFILES_SEPARATOR_REGEX_PATTERN = "\\s*,\\s*";
     public static final String JDBC_POSTGRESQL_URI = "jdbc:postgresql://{0}:{1}/{2}?useSSL=false";
     public static final String AVAILABLE_PROCESSORS = "AVAILABLE_PROCESSORS";
+    public static final String MAIL_HOST = "mail.host";
+    public static final String MAIL_PORT = "mail.port";
 
     private Constants() {
     }
