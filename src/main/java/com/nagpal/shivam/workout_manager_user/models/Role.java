@@ -1,5 +1,6 @@
 package com.nagpal.shivam.workout_manager_user.models;
 
+import com.nagpal.shivam.workout_manager_user.enums.RoleName;
 import com.nagpal.shivam.workout_manager_user.utils.ModelConstants;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
@@ -16,13 +17,13 @@ import java.util.List;
 @NoArgsConstructor
 public class Role extends BaseModel {
     private Long userId;
-    private String roleName;
+    private RoleName roleName;
 
     public static Role fromRow(Row row) {
         Role role = new Role();
         BaseModel.populateMappingFromRow(role, row);
         role.setUserId(row.getLong(ModelConstants.USER_ID));
-        role.setRoleName(row.getString(ModelConstants.ROLE));
+        role.setRoleName(RoleName.valueOf(row.getString(ModelConstants.ROLE)));
         return role;
     }
 
