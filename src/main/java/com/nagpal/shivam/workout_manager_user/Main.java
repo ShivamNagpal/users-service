@@ -36,6 +36,7 @@ public class Main {
                                 DatabaseConfiguration.initFlyway(config);
                                 promise.complete();
                             })
+                            .compose(o -> DatabaseConfiguration.verifyMongoIndices(vertx, config))
                             .compose(event -> DatabaseVerticle.deploy(vertx, config)
                                     .compose(result -> HttpVerticle.deploy(vertx, config))
                             );

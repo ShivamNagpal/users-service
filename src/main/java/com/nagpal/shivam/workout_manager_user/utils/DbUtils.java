@@ -1,6 +1,8 @@
 package com.nagpal.shivam.workout_manager_user.utils;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.sqlclient.*;
 
 import java.util.List;
@@ -38,7 +40,12 @@ public class DbUtils {
                 .map(mapper);
     }
 
-    public static Future<Void> dbHealthCheck(SqlClient sqlClient) {
+    public static Future<Void> sqlClientHealthCheck(SqlClient sqlClient) {
         return executeQuery(sqlClient, Constants.SELECT_1, Tuple.tuple());
+    }
+
+    public static Future<Void> mongoClientHealthCheck(MongoClient mongoClient) {
+        return mongoClient.runCommand(Constants.PING, new JsonObject().put(Constants.PING, 1))
+                .compose(ob -> Future.succeededFuture());
     }
 }
