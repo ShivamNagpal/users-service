@@ -3,6 +3,7 @@ package com.nagpal.shivam.workout_manager_user.verticles;
 import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.services.HealthService;
+import com.nagpal.shivam.workout_manager_user.services.impl.HealthServiceImpl;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.*;
@@ -55,7 +56,7 @@ public class HttpVerticle extends AbstractVerticle {
     }
 
     private void initComponents(Vertx vertx, Router mainRouter) {
-        HealthService healthService = new HealthService(vertx);
+        HealthService healthService = new HealthServiceImpl(vertx);
         new HealthController(vertx, mainRouter, healthService);
     }
 }
