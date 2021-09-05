@@ -15,10 +15,13 @@ public enum Configuration {
     PG_PASSWORD("pg.password", "PG_PASSWORD"),
     MONGO_CONNECTION_URI("mongo.connection.uri", "MONGO_CONNECTION_URI"),
     MONGO_DATABASE("mongo.database", "MONGO_DATABASE"),
+    MAIL_USERNAME("mail.username", "MAIL_USERNAME"),
+    MAIL_PASSWORD("mail.password", "MAIL_PASSWORD"),
     ;
     public static final List<Configuration> MANDATORY_CONFIGURATIONS =
             List.of(SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD, MONGO_CONNECTION_URI,
-                    MONGO_DATABASE);
+                    MONGO_DATABASE, MAIL_USERNAME, MAIL_PASSWORD);
+
     private final String sysKey;
     private final String envKey;
 
