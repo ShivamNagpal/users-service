@@ -1,0 +1,3 @@
+ALTER TABLE public.otp ADD CONSTRAINT otp_pk PRIMARY KEY (id);
+
+ALTER TABLE public."role" ADD CONSTRAINT role_pk PRIMARY KEY (id);
