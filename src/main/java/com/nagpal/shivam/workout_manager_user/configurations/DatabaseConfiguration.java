@@ -46,8 +46,8 @@ public class DatabaseConfiguration {
 
     public static MongoClient getMongoClient(Vertx vertx, JsonObject config) {
         return MongoClient.createShared(vertx, new JsonObject()
-                .put(Constants.CONNECTION_STRING, config.getString(Configuration.MONGO_CONNECTION_STRING.getKey()))
-                .put(Constants.DB_NAME, config.getString(Configuration.MONGO_CONNECTION_DATABASE.getKey()))
+                .put(Constants.CONNECTION_STRING, config.getString(Configuration.MONGO_CONNECTION_URI.getKey()))
+                .put(Constants.DB_NAME, config.getString(Configuration.MONGO_DATABASE.getKey()))
         );
     }
 

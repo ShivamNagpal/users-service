@@ -18,7 +18,7 @@ public class Constants {
     public static final String DB_NAME = "db_name";
     public static final String PING = "ping";
     public static final String SESSION = "session";
-    public static final String USER_ID = "user_id";
+    public static final String USER_ID = "userId";
 
     private Constants() {
     }
