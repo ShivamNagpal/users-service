@@ -1,11 +1,13 @@
 package com.nagpal.shivam.workout_manager_user.verticles;
 
 import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfiguration;
+import com.nagpal.shivam.workout_manager_user.dao.UserDao;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.DbEventAddress;
 import com.nagpal.shivam.workout_manager_user.utils.DbUtils;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.*;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.sqlclient.SqlClient;
@@ -49,14 +51,17 @@ public class DatabaseVerticle extends AbstractVerticle {
     }
 
     private void setupDAOs(Vertx vertx, SqlClient sqlClient, MongoClient mongoClient) {
-        vertx.eventBus().consumer(DbEventAddress.DB_PG_HEALTH, event -> DbUtils.sqlClientHealthCheck(sqlClient)
+        EventBus eventBus = vertx.eventBus();
+        eventBus.consumer(DbEventAddress.DB_PG_HEALTH, event -> DbUtils.sqlClientHealthCheck(sqlClient)
                 .onSuccess(v -> event.reply(true))
                 .onFailure(throwable -> event.reply(false))
         );
 
-        vertx.eventBus().consumer(DbEventAddress.DB_MONGO_HEALTH, event -> DbUtils.mongoClientHealthCheck(mongoClient)
+        eventBus.consumer(DbEventAddress.DB_MONGO_HEALTH, event -> DbUtils.mongoClientHealthCheck(mongoClient)
                 .onSuccess(v -> event.reply(true))
                 .onFailure(throwable -> event.reply(false))
         );
+
+        new UserDao(eventBus, sqlClient, mongoClient);
     }
 }

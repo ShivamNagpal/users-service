@@ -12,6 +12,10 @@ public class MessageConstants {
     public static final String DUPLICATE_CONFIG_KEYS_PROVIDED = "Duplicate config keys provided: {0}";
     public static final String VERTX_ACTIVE_PROFILES = "Vertx active profiles: {0}";
     public static final String RESPONSE_EXCEPTION_PAYLOAD = "ResponseException Payload: {0}";
+    public static final String MUST_NOT_BE_A_NULL_VALUE = "Must not be a null value";
+    public static final String MUST_NOT_BE_BLANK = "Must not be blank";
+    public static final String VALIDATION_ERRORS_IN_THE_REQUEST = "Validation errors in the request";
+    public static final String REQUEST_BODY_NOT_PROVIDED = "Request Body not provided";
 
     private MessageConstants() {
     }

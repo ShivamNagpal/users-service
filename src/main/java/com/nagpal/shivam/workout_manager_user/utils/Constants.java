@@ -21,6 +21,8 @@ public class Constants {
     public static final String PING = "ping";
     public static final String SESSION = "session";
     public static final String USER_ID = "userId";
+    public static final int MESSAGE_FAILURE_HANDLED = 0;
+    public static final int MESSAGE_FAILURE_UNHANDLED = -1;
 
     private Constants() {
     }

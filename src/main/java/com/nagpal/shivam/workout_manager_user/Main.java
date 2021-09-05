@@ -1,7 +1,9 @@
 package com.nagpal.shivam.workout_manager_user;
 
 import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfiguration;
+import com.nagpal.shivam.workout_manager_user.configurations.GenericMessageCodec;
 import com.nagpal.shivam.workout_manager_user.exceptions.AppException;
+import com.nagpal.shivam.workout_manager_user.models.User;
 import com.nagpal.shivam.workout_manager_user.utils.ConfigurationUtils;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
@@ -37,6 +39,10 @@ public class Main {
                                 promise.complete();
                             })
                             .compose(o -> DatabaseConfiguration.verifyMongoIndices(vertx, config))
+                            .map(event -> {
+                                registerMessageCodecs(vertx);
+                                return event;
+                            })
                             .compose(event -> DatabaseVerticle.deploy(vertx, config)
                                     .compose(result -> HttpVerticle.deploy(vertx, config))
                             );
@@ -55,5 +61,10 @@ public class Main {
                 vertx.close();
             }
         });
+    }
+
+    private static void registerMessageCodecs(Vertx vertx) {
+        vertx.eventBus()
+                .registerDefaultCodec(User.class, new GenericMessageCodec<>(User.class));
     }
 }

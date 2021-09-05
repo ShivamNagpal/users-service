@@ -1,14 +1,18 @@
 package com.nagpal.shivam.workout_manager_user.verticles;
 
 import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
+import com.nagpal.shivam.workout_manager_user.controllers.UserController;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.services.HealthService;
+import com.nagpal.shivam.workout_manager_user.services.UserService;
 import com.nagpal.shivam.workout_manager_user.services.impl.HealthServiceImpl;
+import com.nagpal.shivam.workout_manager_user.services.impl.UserServiceImpl;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -56,7 +60,10 @@ public class HttpVerticle extends AbstractVerticle {
     }
 
     private void initComponents(Vertx vertx, Router mainRouter) {
+        mainRouter.route().handler(BodyHandler.create());
         HealthService healthService = new HealthServiceImpl(vertx);
+        UserService userService = new UserServiceImpl(vertx);
         new HealthController(vertx, mainRouter, healthService);
+        new UserController(vertx, mainRouter, userService);
     }
 }
