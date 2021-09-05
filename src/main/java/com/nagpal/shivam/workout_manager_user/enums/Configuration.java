@@ -13,9 +13,12 @@ public enum Configuration {
     PG_DATABASE("pg.database", "PG_DATABASE"),
     PG_USERNAME("pg.username", "PG_USERNAME"),
     PG_PASSWORD("pg.password", "PG_PASSWORD"),
+    MONGO_CONNECTION_URI("mongo.connection.uri", "MONGO_CONNECTION_URI"),
+    MONGO_DATABASE("mongo.database", "MONGO_DATABASE"),
     ;
     public static final List<Configuration> MANDATORY_CONFIGURATIONS =
-            List.of(SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD);
+            List.of(SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD, MONGO_CONNECTION_URI,
+                    MONGO_DATABASE);
     private final String sysKey;
     private final String envKey;
 
