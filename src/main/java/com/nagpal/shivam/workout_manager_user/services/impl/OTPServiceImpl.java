@@ -8,6 +8,7 @@ import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.SqlClient;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
@@ -68,7 +69,6 @@ public class OTPServiceImpl implements OTPService {
     }
 
     private String hashOTP(int otp) {
-        // TODO: Implement Hashing of the OTP
-        return String.valueOf(otp);
+        return BCrypt.hashpw(String.valueOf(otp), BCrypt.gensalt(Constants.BCRYPT_OTP_LOG_ROUNDS));
     }
 }

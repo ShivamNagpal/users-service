@@ -26,6 +26,8 @@ public class Constants {
     public static final int OTP_RETRY_LIMIT = 5;
     public static final int OTP_BACKOFF_TIME = 30;
     public static final int OTP_EXPIRY_TIME = 5;
+    public static final int BCRYPT_PASSWORD_LOG_ROUNDS = 10;
+    public static final int BCRYPT_OTP_LOG_ROUNDS = 4;
 
     private Constants() {
     }

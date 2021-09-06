@@ -2,10 +2,7 @@ package com.nagpal.shivam.workout_manager_user.models;
 
 import com.nagpal.shivam.workout_manager_user.enums.AccountStatus;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
-import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
-import com.nagpal.shivam.workout_manager_user.utils.ModelConstants;
-import com.nagpal.shivam.workout_manager_user.utils.RequestConstants;
-import com.nagpal.shivam.workout_manager_user.utils.RequestValidationUtils;
+import com.nagpal.shivam.workout_manager_user.utils.*;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -15,6 +12,7 @@ import io.vertx.sqlclient.RowSet;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,8 +70,10 @@ public class User extends BaseModel {
         user.setLastName(body.getString(RequestConstants.LAST_NAME));
         // TODO: Validate the email
         user.setEmail(body.getString(RequestConstants.EMAIL));
-        // TODO: Hash the password
-        user.setPassword(body.getString(RequestConstants.PASSWORD));
+        user.setPassword(
+                BCrypt.hashpw(body.getString(RequestConstants.PASSWORD), BCrypt.gensalt(
+                        Constants.BCRYPT_PASSWORD_LOG_ROUNDS))
+        );
 
         return Future.succeededFuture(user);
     }

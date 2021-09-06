@@ -22,7 +22,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public Future<MailResult> sendOTPEmail(String emailId, int otp) {
-        String mailContent = MessageFormat.format(MessageConstants.OTP_EMAIL_CONTENT_FORMAT, otp);
+        String mailContent = MessageFormat.format(MessageConstants.OTP_EMAIL_CONTENT_FORMAT, String.valueOf(otp));
         MailMessage mailMessage = new MailMessage()
                 .setTo(emailId)
                 .setFrom(config.getString(Configuration.MAIL_USERNAME.getKey()))

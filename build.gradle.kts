@@ -41,6 +41,8 @@ dependencies {
     // Note: Blocking Driver, so included only for Flyway to work
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation("org.postgresql:postgresql:42.2.23")
+    // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
+    implementation("org.springframework.security:spring-security-crypto:5.5.2")
 
     testImplementation("io.vertx:vertx-junit5:$vertxVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
