@@ -3,6 +3,7 @@ package com.nagpal.shivam.workout_manager_user.services.impl;
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
+import com.nagpal.shivam.workout_manager_user.services.EmailService;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import io.vertx.core.Future;
@@ -14,10 +15,12 @@ import java.util.Random;
 
 public class OTPServiceImpl implements OTPService {
     private final OTPDao otpDao;
+    private final EmailService emailService;
     private Random random;
 
-    public OTPServiceImpl(OTPDao otpDao) {
+    public OTPServiceImpl(OTPDao otpDao, EmailService emailService) {
         this.otpDao = otpDao;
+        this.emailService = emailService;
         this.random = new SecureRandom();
     }
 
@@ -29,7 +32,7 @@ public class OTPServiceImpl implements OTPService {
                     int otpValue = generateOTP();
                     String otpHash = hashOTP(otpValue);
                     OffsetDateTime currentTime = OffsetDateTime.now();
-                    Future<OTP> saveFuture;
+                    Future<Integer> saveFuture;
                     if (otpOptional.isPresent()) {
                         OTP otp = otpOptional.get();
                         otp.setCount(otp.getCount() + 1);
@@ -40,7 +43,7 @@ public class OTPServiceImpl implements OTPService {
                             int backOffMinutes = Constants.OTP_BACKOFF_TIME - Constants.OTP_EXPIRY_TIME;
                             otp.setLastAccessTime(currentTime.plusMinutes(backOffMinutes));
                         }
-                        saveFuture = otpDao.update(sqlClient, otp).map(otp);
+                        saveFuture = otpDao.update(sqlClient, otp).map(otpValue);
                     } else {
                         OTP otp = new OTP();
                         otp.setUserId(userId);
@@ -51,10 +54,13 @@ public class OTPServiceImpl implements OTPService {
                         otp.setPurpose(otpPurpose);
                         otp.setDeleted(false);
                         otp.setTimeCreated(currentTime);
-                        saveFuture = otpDao.insert(sqlClient, otp).map(otp);
+                        saveFuture = otpDao.insert(sqlClient, otp).map(otpValue);
                     }
                     return saveFuture;
-                }).compose(otp -> Future.succeededFuture());
+                }).compose(otpValue -> {
+                    emailService.sendOTPEmail(email, otpValue);
+                    return Future.succeededFuture();
+                });
     }
 
     private int generateOTP() {

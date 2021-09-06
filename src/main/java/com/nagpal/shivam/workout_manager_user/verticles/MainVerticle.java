@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.verticles;
 
 import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfiguration;
+import com.nagpal.shivam.workout_manager_user.configurations.EmailConfiguration;
 import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
 import com.nagpal.shivam.workout_manager_user.controllers.UserController;
 import com.nagpal.shivam.workout_manager_user.daos.HealthDao;
@@ -10,9 +11,11 @@ import com.nagpal.shivam.workout_manager_user.daos.impl.HealthDaoImpl;
 import com.nagpal.shivam.workout_manager_user.daos.impl.OTPDaoImpl;
 import com.nagpal.shivam.workout_manager_user.daos.impl.UserDaoImpl;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
+import com.nagpal.shivam.workout_manager_user.services.EmailService;
 import com.nagpal.shivam.workout_manager_user.services.HealthService;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.services.UserService;
+import com.nagpal.shivam.workout_manager_user.services.impl.EmailServiceImpl;
 import com.nagpal.shivam.workout_manager_user.services.impl.HealthServiceImpl;
 import com.nagpal.shivam.workout_manager_user.services.impl.OTPServiceImpl;
 import com.nagpal.shivam.workout_manager_user.services.impl.UserServiceImpl;
@@ -51,10 +54,11 @@ public class MainVerticle extends AbstractVerticle {
         String startVerticleMessage =
                 MessageFormat.format(MessageConstants.STARTING_VERTICLE, this.getClass().getSimpleName());
         logger.info(startVerticleMessage);
-        this.setupDBClients(vertx, this.config())
-                .compose(v -> this.setupHttpServer(vertx, this.config()))
+        JsonObject config = this.config();
+        this.setupDBClients(vertx, config)
+                .compose(v -> this.setupHttpServer(vertx, config))
                 .map(v -> {
-                    initComponents();
+                    initComponents(config);
                     return true;
                 })
                 .onSuccess(a -> startPromise.complete())
@@ -85,14 +89,15 @@ public class MainVerticle extends AbstractVerticle {
         return promise.future();
     }
 
-    private void initComponents() {
+    private void initComponents(JsonObject config) {
         setupFilters();
         HealthDao healthDao = new HealthDaoImpl();
         UserDao userDao = new UserDaoImpl();
         OTPDao otpDao = new OTPDaoImpl();
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
-        OTPService otpService = new OTPServiceImpl(otpDao);
+        EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
+        OTPService otpService = new OTPServiceImpl(otpDao, emailService);
         UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService);
 
         new HealthController(vertx, mainRouter, healthService);
