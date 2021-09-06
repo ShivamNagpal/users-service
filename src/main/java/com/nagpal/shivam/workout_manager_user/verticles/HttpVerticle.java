@@ -42,7 +42,6 @@ public class HttpVerticle extends AbstractVerticle {
                 .onFailure(startPromise::fail);
     }
 
-
     private Future<Void> setupHttpServer(Vertx vertx, JsonObject config) {
         Promise<Void> promise = Promise.promise();
         Router mainRouter = Router.router(vertx);
@@ -60,10 +59,19 @@ public class HttpVerticle extends AbstractVerticle {
     }
 
     private void initComponents(Vertx vertx, Router mainRouter) {
-        mainRouter.route().handler(BodyHandler.create());
+        setupFilters(mainRouter);
         HealthService healthService = new HealthServiceImpl(vertx);
         UserService userService = new UserServiceImpl(vertx);
         new HealthController(vertx, mainRouter, healthService);
         new UserController(vertx, mainRouter, userService);
+    }
+
+    private void setupFilters(Router mainRouter) {
+        mainRouter.route()
+                .handler(BodyHandler.create());
+        mainRouter.route().handler(routingContext -> {
+            routingContext.response().putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
+            routingContext.next();
+        });
     }
 }

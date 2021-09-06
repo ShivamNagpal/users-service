@@ -23,6 +23,8 @@ public class Constants {
     public static final String USER_ID = "userId";
     public static final int MESSAGE_FAILURE_HANDLED = 0;
     public static final int MESSAGE_FAILURE_UNHANDLED = -1;
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String CONTENT_TYPE = "content-type";
 
     private Constants() {
     }

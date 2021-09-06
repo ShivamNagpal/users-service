@@ -1,11 +1,12 @@
 package com.nagpal.shivam.workout_manager_user.verticles;
 
 import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfiguration;
-import com.nagpal.shivam.workout_manager_user.dao.UserDao;
+import com.nagpal.shivam.workout_manager_user.daos.UserDao;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.DbEventAddress;
 import com.nagpal.shivam.workout_manager_user.utils.DbUtils;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
+import com.nagpal.shivam.workout_manager_user.verticles.consumer.UserDBConsumer;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
@@ -62,6 +63,7 @@ public class DatabaseVerticle extends AbstractVerticle {
                 .onFailure(throwable -> event.reply(false))
         );
 
-        new UserDao(eventBus, sqlClient, mongoClient);
+        UserDao userDao = new UserDao(sqlClient, mongoClient);
+        new UserDBConsumer(eventBus, userDao);
     }
 }
