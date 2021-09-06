@@ -6,28 +6,28 @@ import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.sqlclient.SqlClient;
+import io.vertx.pgclient.PgPool;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HealthServiceImpl implements com.nagpal.shivam.workout_manager_user.services.HealthService {
     private static final Logger logger = Logger.getLogger(HealthServiceImpl.class.getName());
-    private final SqlClient sqlClient;
+    private final PgPool pgPool;
     private final MongoClient mongoClient;
     private final HealthDao healthDao;
 
-    public HealthServiceImpl(SqlClient sqlClient, MongoClient mongoClient, HealthDao healthDao) {
-        this.sqlClient = sqlClient;
+    public HealthServiceImpl(PgPool pgPool, MongoClient mongoClient, HealthDao healthDao) {
+        this.pgPool = pgPool;
         this.mongoClient = mongoClient;
         this.healthDao = healthDao;
     }
 
     @Override
     public Future<String> checkDbHealth() {
-        Future<Void> sqlClientHealthFuture = healthDao.sqlClientHealthCheck(sqlClient)
+        Future<Void> sqlClientHealthFuture = healthDao.pgPoolHealthCheck(pgPool)
                 .recover(throwable -> {
-                    logger.log(Level.SEVERE, MessageConstants.SQL_CLIENT_HEALTH_CHECK_FAILED, throwable);
+                    logger.log(Level.SEVERE, MessageConstants.PG_POOL_HEALTH_CHECK_FAILED, throwable);
                     return Future.failedFuture(throwable);
                 });
         Future<Void> mongoClientHealthCheckFuture = healthDao.mongoClientHealthCheck(mongoClient)

@@ -19,7 +19,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.sqlclient.SqlClient;
+import io.vertx.pgclient.PgPool;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -29,7 +29,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private static final Logger logger = Logger.getLogger(MainVerticle.class.getName());
     private Router mainRouter;
-    private SqlClient sqlClient;
+    private PgPool pgPool;
     private MongoClient mongoClient;
 
     public static Future<String> deploy(Vertx vertx, JsonObject config) {
@@ -58,10 +58,10 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private Future<Void> setupDBClients(Vertx vertx, JsonObject config) {
-        sqlClient = DatabaseConfiguration.getSqlClient(vertx, config);
+        pgPool = DatabaseConfiguration.getSqlClient(vertx, config);
         mongoClient = DatabaseConfiguration.getMongoClient(vertx, config);
         HealthDaoImpl healthDao = new HealthDaoImpl();
-        return CompositeFuture.all(healthDao.sqlClientHealthCheck(sqlClient),
+        return CompositeFuture.all(healthDao.pgPoolHealthCheck(pgPool),
                         healthDao.mongoClientHealthCheck(mongoClient))
                 .compose(compositeFuture -> Future.succeededFuture());
     }
@@ -86,8 +86,8 @@ public class MainVerticle extends AbstractVerticle {
         HealthDao healthDao = new HealthDaoImpl();
         UserDao userDao = new UserDaoImpl();
 
-        HealthService healthService = new HealthServiceImpl(sqlClient, mongoClient, healthDao);
-        UserService userService = new UserServiceImpl(sqlClient, mongoClient, userDao);
+        HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
+        UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao);
 
         new HealthController(vertx, mainRouter, healthService);
         new UserController(vertx, mainRouter, userService);

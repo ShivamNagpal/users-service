@@ -15,7 +15,7 @@ public class HealthDaoImpl implements HealthDao {
     }
 
     @Override
-    public Future<Void> sqlClientHealthCheck(SqlClient sqlClient) {
+    public Future<Void> pgPoolHealthCheck(SqlClient sqlClient) {
         return DbUtils.executeQuery(sqlClient, Constants.SELECT_1, Tuple.tuple());
     }
 

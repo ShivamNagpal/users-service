@@ -14,7 +14,7 @@ public class MessageConstants {
     public static final String MUST_NOT_BE_BLANK = "Must not be blank";
     public static final String VALIDATION_ERRORS_IN_THE_REQUEST = "Validation errors in the request";
     public static final String REQUEST_BODY_NOT_PROVIDED = "Request Body not provided";
-    public static final String SQL_CLIENT_HEALTH_CHECK_FAILED = "SQL Client Health Check Failed";
+    public static final String PG_POOL_HEALTH_CHECK_FAILED = "PG Pool Health Check Failed";
     public static final String MONGO_CLIENT_HEALTH_CHECK_FAILED = "Mongo Client Health Check Failed";
 
     private MessageConstants() {

@@ -5,7 +5,7 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.sqlclient.SqlClient;
 
 public interface HealthDao {
-    Future<Void> sqlClientHealthCheck(SqlClient sqlClient);
+    Future<Void> pgPoolHealthCheck(SqlClient sqlClient);
 
     Future<Void> mongoClientHealthCheck(MongoClient mongoClient);
 }

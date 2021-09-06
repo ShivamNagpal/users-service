@@ -6,17 +6,17 @@ import com.nagpal.shivam.workout_manager_user.models.User;
 import com.nagpal.shivam.workout_manager_user.services.UserService;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.sqlclient.SqlClient;
+import io.vertx.pgclient.PgPool;
 
 import java.time.OffsetDateTime;
 
 public class UserServiceImpl implements UserService {
-    private final SqlClient sqlClient;
+    private final PgPool pgPool;
     private final MongoClient mongoClient;
     private final UserDao userDao;
 
-    public UserServiceImpl(SqlClient sqlClient, MongoClient mongoClient, UserDao userDao) {
-        this.sqlClient = sqlClient;
+    public UserServiceImpl(PgPool pgPool, MongoClient mongoClient, UserDao userDao) {
+        this.pgPool = pgPool;
         this.mongoClient = mongoClient;
         this.userDao = userDao;
     }
@@ -30,7 +30,8 @@ public class UserServiceImpl implements UserService {
         user.setEmailVerified(false);
         user.setAccountStatus(AccountStatus.UNVERIFIED);
 
-        return userDao.signUp(sqlClient, user)
+
+        return userDao.signUp(pgPool, user)
                 .compose(object -> Future.succeededFuture());
     }
 }
