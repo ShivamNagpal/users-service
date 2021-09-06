@@ -4,7 +4,6 @@ import com.nagpal.shivam.workout_manager_user.daos.UserDao;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
 import com.nagpal.shivam.workout_manager_user.models.User;
 import com.nagpal.shivam.workout_manager_user.utils.DbUtils;
-import com.nagpal.shivam.workout_manager_user.utils.ModelConstants;
 import com.nagpal.shivam.workout_manager_user.utils.PgExceptionCodes;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -37,7 +36,7 @@ public class UserDaoImpl implements UserDao {
                 user.getTimeCreated(),
                 user.getTimeLastModified()
         );
-        return DbUtils.executeQueryAndReturnOne(sqlClient, INSERT_USER, values, row -> row.getLong(ModelConstants.ID))
+        return DbUtils.executeQueryAndReturnOne(sqlClient, INSERT_USER, values, DbUtils::mapRowToId)
                 .map(Optional::get)
                 .recover(throwable -> {
                     if (throwable instanceof PgException) {

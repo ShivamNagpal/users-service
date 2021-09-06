@@ -48,4 +48,8 @@ public class DbUtils {
         return mongoClient.runCommand(Constants.PING, new JsonObject().put(Constants.PING, 1))
                 .compose(ob -> Future.succeededFuture());
     }
+
+    public static Long mapRowToId(Row row) {
+        return row.getLong(ModelConstants.ID);
+    }
 }

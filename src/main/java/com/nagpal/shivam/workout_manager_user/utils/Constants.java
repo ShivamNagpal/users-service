@@ -23,6 +23,9 @@ public class Constants {
     public static final String USER_ID = "userId";
     public static final String APPLICATION_JSON = "application/json";
     public static final String CONTENT_TYPE = "content-type";
+    public static final int OTP_RETRY_LIMIT = 5;
+    public static final int OTP_BACKOFF_TIME = 30;
+    public static final int OTP_EXPIRY_TIME = 5;
 
     private Constants() {
     }

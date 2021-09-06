@@ -23,4 +23,8 @@ public class BaseModel {
         baseModel.setTimeCreated(row.getOffsetDateTime(ModelConstants.TIME_CREATED));
         baseModel.setTimeLastModified(row.getOffsetDateTime(ModelConstants.TIME_LAST_MODIFIED));
     }
+
+    public void updateLastModifiedTime() {
+        setTimeLastModified(OffsetDateTime.now());
+    }
 }
