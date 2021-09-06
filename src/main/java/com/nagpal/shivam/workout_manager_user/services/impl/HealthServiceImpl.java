@@ -1,23 +1,42 @@
 package com.nagpal.shivam.workout_manager_user.services.impl;
 
+import com.nagpal.shivam.workout_manager_user.daos.HealthDao;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
-import com.nagpal.shivam.workout_manager_user.utils.DbEventAddress;
+import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.sqlclient.SqlClient;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HealthServiceImpl implements com.nagpal.shivam.workout_manager_user.services.HealthService {
-    private final Vertx vertx;
+    private static final Logger logger = Logger.getLogger(HealthServiceImpl.class.getName());
+    private final SqlClient sqlClient;
+    private final MongoClient mongoClient;
+    private final HealthDao healthDao;
 
-    public HealthServiceImpl(Vertx vertx) {
-        this.vertx = vertx;
+    public HealthServiceImpl(SqlClient sqlClient, MongoClient mongoClient, HealthDao healthDao) {
+        this.sqlClient = sqlClient;
+        this.mongoClient = mongoClient;
+        this.healthDao = healthDao;
     }
 
     @Override
     public Future<String> checkDbHealth() {
-        return vertx.eventBus().request(DbEventAddress.DB_PG_HEALTH, null)
-                .map(message -> {
-                    boolean result = (Boolean) message.body();
-                    return result ? Constants.UP : Constants.DOWN;
+        Future<Void> sqlClientHealthFuture = healthDao.sqlClientHealthCheck(sqlClient)
+                .recover(throwable -> {
+                    logger.log(Level.SEVERE, MessageConstants.SQL_CLIENT_HEALTH_CHECK_FAILED, throwable);
+                    return Future.failedFuture(throwable);
                 });
+        Future<Void> mongoClientHealthCheckFuture = healthDao.mongoClientHealthCheck(mongoClient)
+                .recover(throwable -> {
+                    logger.log(Level.SEVERE, MessageConstants.MONGO_CLIENT_HEALTH_CHECK_FAILED, throwable);
+                    return Future.failedFuture(throwable);
+                });
+        return CompositeFuture.join(sqlClientHealthFuture, mongoClientHealthCheckFuture)
+                .map(Constants.UP)
+                .recover(throwable -> Future.succeededFuture(Constants.DOWN));
     }
 }

@@ -6,8 +6,6 @@ public class MessageConstants {
     public static final String SUCCESSFULLY_DEPLOYED_THE_VERTICLES = "Successfully deployed the Verticles";
     public static final String STARTING_VERTICLE = "Starting verticle \"{0}\"";
     public static final String SHUTTING_DOWN_THE_VERT_X = "Shutting down the Vert.x";
-    public static final String SUCCESSFULLY_CONNECTED_TO_THE_POSTGRESQL_DATABASE =
-            "Successfully connected to the Postgresql Database";
     public static final String SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE = "Successfully created SqlClient instance";
     public static final String DUPLICATE_CONFIG_KEYS_PROVIDED = "Duplicate config keys provided: {0}";
     public static final String VERTX_ACTIVE_PROFILES = "Vertx active profiles: {0}";
@@ -16,6 +14,8 @@ public class MessageConstants {
     public static final String MUST_NOT_BE_BLANK = "Must not be blank";
     public static final String VALIDATION_ERRORS_IN_THE_REQUEST = "Validation errors in the request";
     public static final String REQUEST_BODY_NOT_PROVIDED = "Request Body not provided";
+    public static final String SQL_CLIENT_HEALTH_CHECK_FAILED = "SQL Client Health Check Failed";
+    public static final String MONGO_CLIENT_HEALTH_CHECK_FAILED = "Mongo Client Health Check Failed";
 
     private MessageConstants() {
     }

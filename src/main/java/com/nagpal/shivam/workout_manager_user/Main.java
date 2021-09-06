@@ -1,14 +1,11 @@
 package com.nagpal.shivam.workout_manager_user;
 
 import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfiguration;
-import com.nagpal.shivam.workout_manager_user.configurations.GenericMessageCodec;
 import com.nagpal.shivam.workout_manager_user.exceptions.AppException;
-import com.nagpal.shivam.workout_manager_user.models.User;
 import com.nagpal.shivam.workout_manager_user.utils.ConfigurationUtils;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
-import com.nagpal.shivam.workout_manager_user.verticles.DatabaseVerticle;
-import com.nagpal.shivam.workout_manager_user.verticles.HttpVerticle;
+import com.nagpal.shivam.workout_manager_user.verticles.MainVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 
@@ -39,12 +36,7 @@ public class Main {
                                 promise.complete();
                             })
                             .compose(o -> DatabaseConfiguration.verifyMongoIndices(vertx, config))
-                            .map(event -> {
-                                registerMessageCodecs(vertx);
-                                return event;
-                            })
-                            .compose(event -> DatabaseVerticle.deploy(vertx, config)
-                                    .compose(result -> HttpVerticle.deploy(vertx, config))
+                            .compose(result -> MainVerticle.deploy(vertx, config)
                             );
                 })
                 .onSuccess(result -> logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_DEPLOYED_THE_VERTICLES))
@@ -61,10 +53,5 @@ public class Main {
                 vertx.close();
             }
         });
-    }
-
-    private static void registerMessageCodecs(Vertx vertx) {
-        vertx.eventBus()
-                .registerDefaultCodec(User.class, new GenericMessageCodec<>(User.class));
     }
 }

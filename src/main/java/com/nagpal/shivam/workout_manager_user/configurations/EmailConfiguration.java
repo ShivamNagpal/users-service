@@ -9,6 +9,9 @@ import io.vertx.ext.mail.MailConfig;
 
 public class EmailConfiguration {
 
+    private EmailConfiguration() {
+    }
+
     public static MailClient getMailClient(Vertx vertx, JsonObject config) {
         MailConfig mailConfig = new MailConfig()
                 .setHostname(config.getString(Constants.MAIL_HOST))
