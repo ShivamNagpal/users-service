@@ -32,8 +32,8 @@ public class UserController {
                 .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                         .compose(User::fromRequest)
                         .compose(userService::signUp)
-                        .onSuccess(obj -> routingContext.response().setStatusCode(HttpResponseStatus.CREATED.code())
-                                .end(Json.encodePrettily(ResponseWrapper.success(obj))))
+                        .onSuccess(user -> routingContext.response().setStatusCode(HttpResponseStatus.CREATED.code())
+                                .end(Json.encodePrettily(ResponseWrapper.success(user))))
                         .onFailure(throwable -> GlobalExceptionHandler.handle(throwable,
                                 routingContext.response())));
     }

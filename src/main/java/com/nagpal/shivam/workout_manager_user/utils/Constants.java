@@ -28,6 +28,8 @@ public class Constants {
     public static final int OTP_EXPIRY_TIME = 5;
     public static final int BCRYPT_PASSWORD_LOG_ROUNDS = 10;
     public static final int BCRYPT_OTP_LOG_ROUNDS = 4;
+    public static final String EMAIL = "email";
+    public static final String PURPOSE = "purpose";
 
     private Constants() {
     }

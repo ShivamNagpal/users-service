@@ -17,10 +17,11 @@ public enum Configuration {
     MONGO_DATABASE("mongo.database", "MONGO_DATABASE"),
     MAIL_USERNAME("mail.username", "MAIL_USERNAME"),
     MAIL_PASSWORD("mail.password", "MAIL_PASSWORD"),
+    OTP_SECRET_TOKEN("otp.secret.token", "OTP_SECRET_TOKEN"),
     ;
     public static final List<Configuration> MANDATORY_CONFIGURATIONS =
             List.of(SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD, MONGO_CONNECTION_URI,
-                    MONGO_DATABASE, MAIL_USERNAME, MAIL_PASSWORD);
+                    MONGO_DATABASE, MAIL_USERNAME, MAIL_PASSWORD, OTP_SECRET_TOKEN);
 
     private final String sysKey;
     private final String envKey;

@@ -4,6 +4,7 @@ import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.services.EmailService;
+import com.nagpal.shivam.workout_manager_user.services.JWTService;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import io.vertx.core.Future;
@@ -17,17 +18,19 @@ import java.util.Random;
 public class OTPServiceImpl implements OTPService {
     private final OTPDao otpDao;
     private final EmailService emailService;
+    private final JWTService jwtService;
     private Random random;
 
-    public OTPServiceImpl(OTPDao otpDao, EmailService emailService) {
+    public OTPServiceImpl(OTPDao otpDao, EmailService emailService, JWTService jwtService) {
         this.otpDao = otpDao;
         this.emailService = emailService;
+        this.jwtService = jwtService;
         this.random = new SecureRandom();
     }
 
     @Override
-    public Future<Void> triggerEmailVerification(SqlClient sqlClient, Long userId, String email,
-                                                 OTPPurpose otpPurpose) {
+    public Future<String> triggerEmailVerification(SqlClient sqlClient, Long userId, String email,
+                                                   OTPPurpose otpPurpose) {
         return otpDao.fetchAlreadyTriggeredOTP(sqlClient, userId, email)
                 .compose(otpOptional -> {
                     int otpValue = generateOTP();
@@ -60,7 +63,8 @@ public class OTPServiceImpl implements OTPService {
                     return saveFuture;
                 }).compose(otpValue -> {
                     emailService.sendOTPEmail(email, otpValue);
-                    return Future.succeededFuture();
+                    String otpToken = jwtService.generateOTPToken(userId, email, otpPurpose);
+                    return Future.succeededFuture(otpToken);
                 });
     }
 

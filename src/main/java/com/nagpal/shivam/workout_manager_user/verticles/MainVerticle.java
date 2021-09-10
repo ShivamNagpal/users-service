@@ -11,14 +11,8 @@ import com.nagpal.shivam.workout_manager_user.daos.impl.HealthDaoImpl;
 import com.nagpal.shivam.workout_manager_user.daos.impl.OTPDaoImpl;
 import com.nagpal.shivam.workout_manager_user.daos.impl.UserDaoImpl;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
-import com.nagpal.shivam.workout_manager_user.services.EmailService;
-import com.nagpal.shivam.workout_manager_user.services.HealthService;
-import com.nagpal.shivam.workout_manager_user.services.OTPService;
-import com.nagpal.shivam.workout_manager_user.services.UserService;
-import com.nagpal.shivam.workout_manager_user.services.impl.EmailServiceImpl;
-import com.nagpal.shivam.workout_manager_user.services.impl.HealthServiceImpl;
-import com.nagpal.shivam.workout_manager_user.services.impl.OTPServiceImpl;
-import com.nagpal.shivam.workout_manager_user.services.impl.UserServiceImpl;
+import com.nagpal.shivam.workout_manager_user.services.*;
+import com.nagpal.shivam.workout_manager_user.services.impl.*;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.*;
@@ -96,8 +90,9 @@ public class MainVerticle extends AbstractVerticle {
         OTPDao otpDao = new OTPDaoImpl();
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
+        JWTService jwtService = new JWTServiceImpl(config);
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
-        OTPService otpService = new OTPServiceImpl(otpDao, emailService);
+        OTPService otpService = new OTPServiceImpl(otpDao, emailService, jwtService);
         UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService);
 
         new HealthController(vertx, mainRouter, healthService);
