@@ -1,7 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.services.impl;
 
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
-import com.nagpal.shivam.workout_manager_user.dtos.response.SignUpResponseDto;
+import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.AccountStatus;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.models.User;
@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Future<SignUpResponseDto> signUp(User user) {
+    public Future<OTPResponseDTO> signUp(User user) {
         user.setDeleted(false);
         OffsetDateTime currentTime = OffsetDateTime.now();
         user.setTimeCreated(currentTime);
@@ -38,11 +38,10 @@ public class UserServiceImpl implements UserService {
         return pgPool.withTransaction(client -> userDao.signUp(client, user)
                 .compose(userId -> otpService.triggerEmailVerification(client, userId, user.getEmail(),
                                 OTPPurpose.VERIFY_USER)
-                        .compose(otpToken -> {
-                            SignUpResponseDto signUpResponseDto = new SignUpResponseDto();
-                            signUpResponseDto.setUserId(userId);
-                            signUpResponseDto.setOtpToken(otpToken);
-                            return Future.succeededFuture(signUpResponseDto);
+                        .map(otpToken -> {
+                            OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
+                            otpResponseDTO.setOtpToken(otpToken);
+                            return otpResponseDTO;
                         })
                 )
         );

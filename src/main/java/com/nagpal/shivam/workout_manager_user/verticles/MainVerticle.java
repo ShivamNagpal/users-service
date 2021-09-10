@@ -3,6 +3,7 @@ package com.nagpal.shivam.workout_manager_user.verticles;
 import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfiguration;
 import com.nagpal.shivam.workout_manager_user.configurations.EmailConfiguration;
 import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
+import com.nagpal.shivam.workout_manager_user.controllers.OTPController;
 import com.nagpal.shivam.workout_manager_user.controllers.UserController;
 import com.nagpal.shivam.workout_manager_user.daos.HealthDao;
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
@@ -92,10 +93,11 @@ public class MainVerticle extends AbstractVerticle {
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
         JWTService jwtService = new JWTServiceImpl(config);
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
-        OTPService otpService = new OTPServiceImpl(otpDao, emailService, jwtService);
+        OTPService otpService = new OTPServiceImpl(pgPool, otpDao, emailService, jwtService);
         UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService);
 
         new HealthController(vertx, mainRouter, healthService);
+        new OTPController(vertx, mainRouter, otpService, jwtService);
         new UserController(vertx, mainRouter, userService);
     }
 

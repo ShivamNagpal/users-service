@@ -29,7 +29,9 @@ public class Constants {
     public static final int BCRYPT_PASSWORD_LOG_ROUNDS = 10;
     public static final int BCRYPT_OTP_LOG_ROUNDS = 4;
     public static final String EMAIL = "email";
-    public static final String PURPOSE = "purpose";
+    public static final String OTP_PURPOSE = "otpPurpose";
+    public static final String ISSUER_WORKOUT_MANAGER = "WORKOUT_MANAGER";
+    public static final String OTP_TOKEN = "otp-token";
 
     private Constants() {
     }

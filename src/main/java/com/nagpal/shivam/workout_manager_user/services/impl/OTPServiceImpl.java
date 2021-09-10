@@ -1,6 +1,8 @@
 package com.nagpal.shivam.workout_manager_user.services.impl;
 
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
+import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.services.EmailService;
@@ -8,6 +10,7 @@ import com.nagpal.shivam.workout_manager_user.services.JWTService;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import io.vertx.core.Future;
+import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.SqlClient;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -16,16 +19,30 @@ import java.time.OffsetDateTime;
 import java.util.Random;
 
 public class OTPServiceImpl implements OTPService {
+    private final PgPool pgPool;
     private final OTPDao otpDao;
     private final EmailService emailService;
     private final JWTService jwtService;
-    private Random random;
+    private final Random random;
 
-    public OTPServiceImpl(OTPDao otpDao, EmailService emailService, JWTService jwtService) {
+    public OTPServiceImpl(PgPool pgPool, OTPDao otpDao, EmailService emailService,
+                          JWTService jwtService) {
+        this.pgPool = pgPool;
         this.otpDao = otpDao;
         this.emailService = emailService;
         this.jwtService = jwtService;
         this.random = new SecureRandom();
+    }
+
+    @Override
+    public Future<OTPResponseDTO> resendOTP(JWTOTPTokenDTO jwtotpTokenDTO) {
+        return triggerEmailVerification(pgPool, jwtotpTokenDTO.getUserId(), jwtotpTokenDTO.getEmail(),
+                jwtotpTokenDTO.getOtpPurpose())
+                .map(newOtpToken -> {
+                    OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
+                    otpResponseDTO.setOtpToken(newOtpToken);
+                    return otpResponseDTO;
+                });
     }
 
     @Override
@@ -63,7 +80,11 @@ public class OTPServiceImpl implements OTPService {
                     return saveFuture;
                 }).compose(otpValue -> {
                     emailService.sendOTPEmail(email, otpValue);
-                    String otpToken = jwtService.generateOTPToken(userId, email, otpPurpose);
+                    JWTOTPTokenDTO jwtotpTokenDTO = new JWTOTPTokenDTO();
+                    jwtotpTokenDTO.setUserId(userId);
+                    jwtotpTokenDTO.setEmail(email);
+                    jwtotpTokenDTO.setOtpPurpose(otpPurpose);
+                    String otpToken = jwtService.generateOTPToken(jwtotpTokenDTO);
                     return Future.succeededFuture(otpToken);
                 });
     }

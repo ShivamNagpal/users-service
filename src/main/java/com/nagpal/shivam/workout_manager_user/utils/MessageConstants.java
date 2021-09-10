@@ -18,6 +18,8 @@ public class MessageConstants {
     public static final String MONGO_CLIENT_HEALTH_CHECK_FAILED = "Mongo Client Health Check Failed";
     public static final String OTP_EMAIL_SUBJECT = "OTP From Workout Manager";
     public static final String OTP_EMAIL_CONTENT_FORMAT = "Please use this OTP {0}";
+    public static final String OTP_TOKEN_NOT_PROVIDED = "OTP Token not provided";
+    public static final String INVALID_OTP_TOKEN = "Invalid OTP Token";
 
     private MessageConstants() {
     }
