@@ -4,11 +4,14 @@ import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
+import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.services.EmailService;
 import com.nagpal.shivam.workout_manager_user.services.JWTService;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
+import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.SqlClient;
@@ -60,9 +63,18 @@ public class OTPServiceImpl implements OTPService {
                         otp.setOtpHash(otpHash);
                         OffsetDateTime lastAccessTime = otp.getLastAccessTime();
                         otp.setLastAccessTime(currentTime);
-                        if (otp.getCount() > Constants.OTP_RETRY_LIMIT && lastAccessTime.isBefore(currentTime)) {
-                            int backOffMinutes = Constants.OTP_BACKOFF_TIME - Constants.OTP_EXPIRY_TIME;
-                            otp.setLastAccessTime(currentTime.plusMinutes(backOffMinutes));
+                        if (otp.getCount() > Constants.OTP_RETRY_LIMIT) {
+                            Future<Void> future;
+                            if (lastAccessTime.isBefore(currentTime)) {
+                                int backOffMinutes = Constants.OTP_BACKOFF_TIME - Constants.OTP_EXPIRY_TIME;
+                                otp.setLastAccessTime(currentTime.plusMinutes(backOffMinutes));
+                                future = otpDao.update(sqlClient, otp);
+                            } else {
+                                future = Future.succeededFuture();
+                            }
+                            return future.compose(v -> Future.failedFuture(
+                                    new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                            MessageConstants.OTP_RESEND_LIMIT_EXCEEDED, null)));
                         }
                         saveFuture = otpDao.update(sqlClient, otp).map(otpValue);
                     } else {

@@ -20,6 +20,7 @@ public class MessageConstants {
     public static final String OTP_EMAIL_CONTENT_FORMAT = "Please use this OTP {0}";
     public static final String OTP_TOKEN_NOT_PROVIDED = "OTP Token not provided";
     public static final String INVALID_OTP_TOKEN = "Invalid OTP Token";
+    public static final String OTP_RESEND_LIMIT_EXCEEDED = "OTP Limit exceeded";
 
     private MessageConstants() {
     }
