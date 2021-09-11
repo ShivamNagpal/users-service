@@ -7,6 +7,7 @@ public class RoutingConstants {
     public static final String SIGN_UP = "/sign-up";
     public static final String OTP = "/otp";
     public static final String RESEND_OTP = "/resend-otp";
+    public static final String VERIFY_OTP = "/verify-otp";
 
     private RoutingConstants() {
     }

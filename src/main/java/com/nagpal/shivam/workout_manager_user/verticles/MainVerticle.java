@@ -7,9 +7,11 @@ import com.nagpal.shivam.workout_manager_user.controllers.OTPController;
 import com.nagpal.shivam.workout_manager_user.controllers.UserController;
 import com.nagpal.shivam.workout_manager_user.daos.HealthDao;
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
+import com.nagpal.shivam.workout_manager_user.daos.RoleDao;
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
 import com.nagpal.shivam.workout_manager_user.daos.impl.HealthDaoImpl;
 import com.nagpal.shivam.workout_manager_user.daos.impl.OTPDaoImpl;
+import com.nagpal.shivam.workout_manager_user.daos.impl.RoleDaoImpl;
 import com.nagpal.shivam.workout_manager_user.daos.impl.UserDaoImpl;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.services.*;
@@ -89,11 +91,12 @@ public class MainVerticle extends AbstractVerticle {
         HealthDao healthDao = new HealthDaoImpl();
         UserDao userDao = new UserDaoImpl();
         OTPDao otpDao = new OTPDaoImpl();
+        RoleDao roleDao = new RoleDaoImpl();
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
         JWTService jwtService = new JWTServiceImpl(config);
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
-        OTPService otpService = new OTPServiceImpl(pgPool, otpDao, emailService, jwtService);
+        OTPService otpService = new OTPServiceImpl(pgPool, otpDao, emailService, jwtService, userDao, roleDao);
         UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService);
 
         new HealthController(vertx, mainRouter, healthService);

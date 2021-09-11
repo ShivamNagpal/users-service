@@ -6,4 +6,6 @@ import io.vertx.sqlclient.SqlClient;
 
 public interface UserDao {
     Future<Long> signUp(SqlClient sqlClient, User user);
+
+    Future<Void> activateUser(SqlClient sqlClient, Long userId);
 }

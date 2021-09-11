@@ -6,6 +6,7 @@ public class RequestConstants {
     public static final String LAST_NAME = "lastName";
     public static final String EMAIL = "email";
     public static final String PASSWORD = "password";
+    public static final String OTP = "otp";
 
     private RequestConstants() {
     }

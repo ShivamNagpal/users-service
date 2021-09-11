@@ -1,7 +1,10 @@
 package com.nagpal.shivam.workout_manager_user.services.impl;
 
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
+import com.nagpal.shivam.workout_manager_user.daos.RoleDao;
+import com.nagpal.shivam.workout_manager_user.daos.UserDao;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.request.VerifyOTPRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
@@ -18,6 +21,7 @@ import io.vertx.sqlclient.SqlClient;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.security.SecureRandom;
+import java.text.MessageFormat;
 import java.time.OffsetDateTime;
 import java.util.Random;
 
@@ -26,14 +30,18 @@ public class OTPServiceImpl implements OTPService {
     private final OTPDao otpDao;
     private final EmailService emailService;
     private final JWTService jwtService;
+    private final UserDao userDao;
+    private final RoleDao roleDao;
     private final Random random;
 
     public OTPServiceImpl(PgPool pgPool, OTPDao otpDao, EmailService emailService,
-                          JWTService jwtService) {
+                          JWTService jwtService, UserDao userDao, RoleDao roleDao) {
         this.pgPool = pgPool;
         this.otpDao = otpDao;
         this.emailService = emailService;
         this.jwtService = jwtService;
+        this.userDao = userDao;
+        this.roleDao = roleDao;
         this.random = new SecureRandom();
     }
 
@@ -46,6 +54,48 @@ public class OTPServiceImpl implements OTPService {
                     otpResponseDTO.setOtpToken(newOtpToken);
                     return otpResponseDTO;
                 });
+    }
+
+    @Override
+    public Future<Void> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO, VerifyOTPRequestDTO verifyOTPRequestDTO) {
+        return pgPool.withTransaction(sqlConnection -> otpDao.fetchAlreadyTriggeredOTP(
+                        sqlConnection,
+                        jwtotpTokenDTO.getUserId(),
+                        jwtotpTokenDTO.getEmail())
+                .compose(otpOptional -> {
+                    if (otpOptional.isEmpty()) {
+                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                MessageConstants.NO_ACTIVE_TRIGGERED_OTP_FOUND, null));
+                    }
+                    OTP otp = otpOptional.get();
+                    if (!BCrypt.checkpw(String.valueOf(verifyOTPRequestDTO.getOtp()), otp.getOtpHash())) {
+                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                MessageConstants.INCORRECT_OTP, null));
+                    }
+                    return Future.succeededFuture();
+                })
+                .compose(v -> {
+                    Future<Void> actionPostOTPVerification;
+                    switch (jwtotpTokenDTO.getOtpPurpose()) {
+                        case VERIFY_USER:
+                            actionPostOTPVerification = userDao.activateUser(
+                                            sqlConnection,
+                                            jwtotpTokenDTO.getUserId()
+                                    )
+                                    .compose(v2 -> roleDao.insertUserRole(sqlConnection, jwtotpTokenDTO.getUserId()))
+                                    // TODO: Generate JWT Token and Refresh Token
+                                    .compose(id -> Future.succeededFuture());
+                            break;
+                        default:
+                            actionPostOTPVerification = Future.failedFuture(
+                                    MessageFormat.format(
+                                            MessageConstants.POST_VERIFICATION_ACTION_NOT_MAPPED_FOR_THE_OTP_PURPOSE,
+                                            jwtotpTokenDTO.getOtpPurpose())
+                            );
+                    }
+                    return actionPostOTPVerification;
+                })
+        );
     }
 
     @Override

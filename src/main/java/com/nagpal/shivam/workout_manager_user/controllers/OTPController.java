@@ -1,5 +1,6 @@
 package com.nagpal.shivam.workout_manager_user.controllers;
 
+import com.nagpal.shivam.workout_manager_user.dtos.request.VerifyOTPRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
 import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
@@ -7,6 +8,7 @@ import com.nagpal.shivam.workout_manager_user.services.JWTService;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
+import com.nagpal.shivam.workout_manager_user.utils.RequestValidationUtils;
 import com.nagpal.shivam.workout_manager_user.utils.RoutingConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
@@ -29,6 +31,7 @@ public class OTPController {
 
     private void setupEndpoints() {
         resendOTP();
+        verifyOTP();
     }
 
     private void resendOTP() {
@@ -48,6 +51,33 @@ public class OTPController {
                             .onSuccess(otpResponseDTO -> routingContext.response()
                                     .setStatusCode(HttpResponseStatus.OK.code())
                                     .end(Json.encodePrettily(ResponseWrapper.success(otpResponseDTO))))
+                            .onFailure(throwable -> GlobalExceptionHandler.handle(throwable,
+                                    routingContext.response()));
+                });
+    }
+
+    private void verifyOTP() {
+        router.post(RoutingConstants.VERIFY_OTP)
+                .handler(routingContext -> {
+                    String otpToken = routingContext.request().getHeader(Constants.OTP_TOKEN);
+                    if (otpToken == null) {
+                        ResponseException exception = new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
+                                MessageConstants.OTP_TOKEN_NOT_PROVIDED,
+                                null
+                        );
+                        GlobalExceptionHandler.handle(exception, routingContext.response());
+                        return;
+                    }
+                    RequestValidationUtils.fetchBodyAsJson(routingContext)
+                            .compose(VerifyOTPRequestDTO::fromRequest)
+                            .compose(verifyOTPRequestDTO -> jwtService.verifyOTPToken(otpToken)
+                                    .compose(
+                                            jWTOTPTokenDTO -> otpService.verifyOTP(jWTOTPTokenDTO, verifyOTPRequestDTO)
+                                    )
+                            )
+                            .onSuccess(obj -> routingContext.response()
+                                    .setStatusCode(HttpResponseStatus.OK.code())
+                                    .end(Json.encodePrettily(ResponseWrapper.success(obj))))
                             .onFailure(throwable -> GlobalExceptionHandler.handle(throwable,
                                     routingContext.response()));
                 });
