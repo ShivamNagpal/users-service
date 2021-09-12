@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface OTPDao {
     Future<Optional<OTP>> fetchAlreadyTriggeredOTP(SqlClient sqlClient, Long userId, String email);
 
+    Future<Optional<OTP>> fetchActiveOTP(SqlClient sqlClient, Long userId, String email);
+
     Future<Void> update(SqlClient sqlClient, OTP otp);
 
     Future<Long> insert(SqlClient sqlClient, OTP otp);

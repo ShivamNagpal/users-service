@@ -15,6 +15,8 @@ public class OTPDaoImpl implements OTPDao {
 
     public static final String SELECT_TRIGGERED_OTP =
             "SELECT * FROM otp where user_id=$1 and email=$2 and last_access_time > $3";
+    public static final String SELECT_ACTIVE_OTP =
+            "SELECT * FROM otp where user_id=$1 and email=$2 and last_access_time > $3 and last_access_time <= $4";
     public static final String INSERT_OTP = "INSERT INTO otp (user_id, email, otp_hash, count, last_access_time, " +
             "purpose, deleted, time_created, time_last_modified) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING" +
             " id";
@@ -27,6 +29,14 @@ public class OTPDaoImpl implements OTPDao {
         OffsetDateTime lastActiveTime = OffsetDateTime.now().minusMinutes(Constants.OTP_EXPIRY_TIME);
         Tuple values = Tuple.of(userId, email, lastActiveTime);
         return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_TRIGGERED_OTP, values, OTP::fromRow);
+    }
+
+    @Override
+    public Future<Optional<OTP>> fetchActiveOTP(SqlClient sqlClient, Long userId, String email) {
+        OffsetDateTime currentTime = OffsetDateTime.now();
+        OffsetDateTime lastActiveTime = currentTime.minusMinutes(Constants.OTP_EXPIRY_TIME);
+        Tuple values = Tuple.of(userId, email, lastActiveTime, currentTime);
+        return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_ACTIVE_OTP, values, OTP::fromRow);
     }
 
     @Override

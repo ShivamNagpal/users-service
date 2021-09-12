@@ -58,43 +58,47 @@ public class OTPServiceImpl implements OTPService {
 
     @Override
     public Future<Void> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO, VerifyOTPRequestDTO verifyOTPRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> otpDao.fetchAlreadyTriggeredOTP(
-                        sqlConnection,
-                        jwtotpTokenDTO.getUserId(),
-                        jwtotpTokenDTO.getEmail())
-                .compose(otpOptional -> {
-                    if (otpOptional.isEmpty()) {
-                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                MessageConstants.NO_ACTIVE_TRIGGERED_OTP_FOUND, null));
-                    }
-                    OTP otp = otpOptional.get();
-                    if (!BCrypt.checkpw(String.valueOf(verifyOTPRequestDTO.getOtp()), otp.getOtpHash())) {
-                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                MessageConstants.INCORRECT_OTP, null));
-                    }
-                    return Future.succeededFuture();
-                })
-                .compose(v -> {
-                    Future<Void> actionPostOTPVerification;
-                    switch (jwtotpTokenDTO.getOtpPurpose()) {
-                        case VERIFY_USER:
-                            actionPostOTPVerification = userDao.activateUser(
-                                            sqlConnection,
-                                            jwtotpTokenDTO.getUserId()
-                                    )
-                                    .compose(v2 -> roleDao.insertUserRole(sqlConnection, jwtotpTokenDTO.getUserId()))
-                                    // TODO: Generate JWT Token and Refresh Token
-                                    .compose(id -> Future.succeededFuture());
-                            break;
-                        default:
-                            actionPostOTPVerification = Future.failedFuture(
-                                    MessageFormat.format(
-                                            MessageConstants.POST_VERIFICATION_ACTION_NOT_MAPPED_FOR_THE_OTP_PURPOSE,
-                                            jwtotpTokenDTO.getOtpPurpose())
-                            );
-                    }
-                    return actionPostOTPVerification;
-                })
+        return pgPool.withTransaction(sqlConnection -> otpDao.fetchActiveOTP(
+                                sqlConnection,
+                                jwtotpTokenDTO.getUserId(),
+                                jwtotpTokenDTO.getEmail()
+                        )
+                        .compose(otpOptional -> {
+                            if (otpOptional.isEmpty()) {
+                                return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                        MessageConstants.NO_ACTIVE_TRIGGERED_OTP_FOUND, null
+                                ));
+                            }
+                            OTP otp = otpOptional.get();
+                            if (!BCrypt.checkpw(String.valueOf(verifyOTPRequestDTO.getOtp()), otp.getOtpHash())) {
+                                return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                        MessageConstants.INCORRECT_OTP, null
+                                ));
+                            }
+                            return Future.succeededFuture();
+                        })
+                        .compose(v -> {
+                            Future<Void> actionPostOTPVerification;
+                            switch (jwtotpTokenDTO.getOtpPurpose()) {
+                                case VERIFY_USER:
+                                    actionPostOTPVerification = userDao.activateUser(
+                                                    sqlConnection,
+                                                    jwtotpTokenDTO.getUserId()
+                                            )
+                                            .compose(v2 -> roleDao.insertUserRole(sqlConnection, jwtotpTokenDTO.getUserId()))
+                                            // TODO: Generate JWT Token and Refresh Token
+                                            .compose(id -> Future.succeededFuture());
+                                    break;
+                                default:
+                                    actionPostOTPVerification = Future.failedFuture(
+                                            MessageFormat.format(
+                                                    MessageConstants.POST_VERIFICATION_ACTION_NOT_MAPPED_FOR_THE_OTP_PURPOSE,
+                                                    jwtotpTokenDTO.getOtpPurpose()
+                                            )
+                                    );
+                            }
+                            return actionPostOTPVerification;
+                        })
         );
     }
 
@@ -114,13 +118,11 @@ public class OTPServiceImpl implements OTPService {
                         OffsetDateTime lastAccessTime = otp.getLastAccessTime();
                         otp.setLastAccessTime(currentTime);
                         if (otp.getCount() > Constants.OTP_RETRY_LIMIT) {
-                            Future<Void> future;
+                            Future<Void> future = Future.succeededFuture();
                             if (lastAccessTime.isBefore(currentTime)) {
                                 int backOffMinutes = Constants.OTP_BACKOFF_TIME - Constants.OTP_EXPIRY_TIME;
                                 otp.setLastAccessTime(currentTime.plusMinutes(backOffMinutes));
                                 future = otpDao.update(sqlClient, otp);
-                            } else {
-                                future = Future.succeededFuture();
                             }
                             return future.compose(v -> Future.failedFuture(
                                     new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
