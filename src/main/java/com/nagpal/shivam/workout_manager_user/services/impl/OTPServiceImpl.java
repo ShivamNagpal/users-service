@@ -7,6 +7,7 @@ import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.VerifyOTPRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
+import com.nagpal.shivam.workout_manager_user.enums.OTPStatus;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.services.EmailService;
@@ -75,8 +76,9 @@ public class OTPServiceImpl implements OTPService {
                                         MessageConstants.INCORRECT_OTP, null
                                 ));
                             }
-                            return Future.succeededFuture();
+                            return Future.succeededFuture(otp);
                         })
+                        .compose(otp -> otpDao.updateOTPStatus(sqlConnection, otp.getId(), OTPStatus.USED))
                         .compose(v -> {
                             Future<Void> actionPostOTPVerification;
                             switch (jwtotpTokenDTO.getOtpPurpose()) {
@@ -115,13 +117,13 @@ public class OTPServiceImpl implements OTPService {
                         OTP otp = otpOptional.get();
                         otp.setCount(otp.getCount() + 1);
                         otp.setOtpHash(otpHash);
-                        OffsetDateTime lastAccessTime = otp.getLastAccessTime();
-                        otp.setLastAccessTime(currentTime);
+                        otp.setValidAfter(currentTime);
                         if (otp.getCount() > Constants.OTP_RETRY_LIMIT) {
                             Future<Void> future = Future.succeededFuture();
-                            if (lastAccessTime.isBefore(currentTime)) {
+                            if (otp.getOtpStatus() == OTPStatus.ACTIVE) {
                                 int backOffMinutes = Constants.OTP_BACKOFF_TIME - Constants.OTP_EXPIRY_TIME;
-                                otp.setLastAccessTime(currentTime.plusMinutes(backOffMinutes));
+                                otp.setValidAfter(currentTime.plusMinutes(backOffMinutes));
+                                otp.setOtpStatus(OTPStatus.OTP_RESEND_LIMIT_REACHED);
                                 future = otpDao.update(sqlClient, otp);
                             }
                             return future.compose(v -> Future.failedFuture(
@@ -135,10 +137,11 @@ public class OTPServiceImpl implements OTPService {
                         otp.setEmail(email);
                         otp.setOtpHash(otpHash);
                         otp.setCount(1);
-                        otp.setLastAccessTime(currentTime);
+                        otp.setValidAfter(currentTime);
                         otp.setPurpose(otpPurpose);
                         otp.setDeleted(false);
                         otp.setTimeCreated(currentTime);
+                        otp.setOtpStatus(OTPStatus.ACTIVE);
                         saveFuture = otpDao.insert(sqlClient, otp).map(otpValue);
                     }
                     return saveFuture;

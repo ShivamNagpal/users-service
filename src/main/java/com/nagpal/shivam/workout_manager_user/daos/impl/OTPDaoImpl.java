@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.daos.impl;
 
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
+import com.nagpal.shivam.workout_manager_user.enums.OTPStatus;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.DbUtils;
@@ -14,15 +15,17 @@ import java.util.Optional;
 public class OTPDaoImpl implements OTPDao {
 
     public static final String SELECT_TRIGGERED_OTP =
-            "SELECT * FROM otp where user_id=$1 and email=$2 and last_access_time > $3";
+            "SELECT * FROM otp where user_id=$1 and email=$2 and valid_after > $3";
     public static final String SELECT_ACTIVE_OTP =
-            "SELECT * FROM otp where user_id=$1 and email=$2 and last_access_time > $3 and last_access_time <= $4";
-    public static final String INSERT_OTP = "INSERT INTO otp (user_id, email, otp_hash, count, last_access_time, " +
-            "purpose, deleted, time_created, time_last_modified) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING" +
-            " id";
+            "SELECT * FROM otp where user_id=$1 and email=$2 and valid_after > $3 and valid_after <= $4 and " +
+                    "otp_status = $5";
+    public static final String INSERT_OTP = "INSERT INTO otp (user_id, email, otp_hash, count, valid_after, " +
+            "purpose, deleted, time_created, time_last_modified, otp_status) VALUES($1, $2, $3, $4, $5, $6, $7, $8, " +
+            "$9, $10) RETURNING id";
     public static final String UPDATE_OTP =
-            "UPDATE otp SET user_id=$1, email=$2, otp_hash=$3, count=$4, last_access_time=$5, purpose=$6, " +
-                    "deleted=$7, time_created=$8, time_last_modified=$9 WHERE id=$10";
+            "UPDATE otp SET user_id=$1, email=$2, otp_hash=$3, count=$4, valid_after=$5, purpose=$6, " +
+                    "deleted=$7, time_created=$8, time_last_modified=$9, otp_status=$10 WHERE id=$11";
+    public static final String UPDATE_OTP_STATUS = "UPDATE otp SET otp_status=$1, time_last_modified=$2 WHERE id=$3";
 
     @Override
     public Future<Optional<OTP>> fetchAlreadyTriggeredOTP(SqlClient sqlClient, Long userId, String email) {
@@ -35,7 +38,7 @@ public class OTPDaoImpl implements OTPDao {
     public Future<Optional<OTP>> fetchActiveOTP(SqlClient sqlClient, Long userId, String email) {
         OffsetDateTime currentTime = OffsetDateTime.now();
         OffsetDateTime lastActiveTime = currentTime.minusMinutes(Constants.OTP_EXPIRY_TIME);
-        Tuple values = Tuple.of(userId, email, lastActiveTime, currentTime);
+        Tuple values = Tuple.of(userId, email, lastActiveTime, currentTime, OTPStatus.ACTIVE);
         return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_ACTIVE_OTP, values, OTP::fromRow);
     }
 
@@ -47,11 +50,12 @@ public class OTPDaoImpl implements OTPDao {
                 otp.getEmail(),
                 otp.getOtpHash(),
                 otp.getCount(),
-                otp.getLastAccessTime(),
+                otp.getValidAfter(),
                 otp.getPurpose(),
                 otp.getDeleted(),
                 otp.getTimeCreated(),
                 otp.getTimeLastModified(),
+                otp.getOtpStatus(),
                 otp.getId()
         );
         return DbUtils.executeQuery(sqlClient, UPDATE_OTP, tuple);
@@ -65,12 +69,23 @@ public class OTPDaoImpl implements OTPDao {
                 otp.getEmail(),
                 otp.getOtpHash(),
                 otp.getCount(),
-                otp.getLastAccessTime(),
+                otp.getValidAfter(),
                 otp.getPurpose(),
                 otp.getDeleted(),
                 otp.getTimeCreated(),
-                otp.getTimeLastModified()
+                otp.getTimeLastModified(),
+                otp.getOtpStatus()
         );
         return DbUtils.executeQueryAndReturnOne(sqlClient, INSERT_OTP, tuple, DbUtils::mapRowToId).map(Optional::get);
+    }
+
+    @Override
+    public Future<Void> updateOTPStatus(SqlClient sqlClient, Long otpId, OTPStatus otpStatus) {
+        Tuple values = Tuple.of(
+                otpStatus,
+                OffsetDateTime.now(),
+                otpId
+        );
+        return DbUtils.executeQuery(sqlClient, UPDATE_OTP_STATUS, values);
     }
 }

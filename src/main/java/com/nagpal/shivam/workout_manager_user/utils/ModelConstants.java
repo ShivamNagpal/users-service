@@ -16,9 +16,10 @@ public class ModelConstants {
     public static final String USER_ID = "user_id";
     public static final String OTP_HASH = "otp_hash";
     public static final String COUNT = "count";
-    public static final String LAST_ACCESS_TIME = "last_access_time";
+    public static final String VALID_AFTER = "valid_after";
     public static final String PURPOSE = "purpose";
     public static final String ROLE = "role";
+    public static final String OTP_STATUS = "otp_status";
 
     private ModelConstants() {
     }

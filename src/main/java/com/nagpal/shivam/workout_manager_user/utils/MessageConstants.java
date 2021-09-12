@@ -20,7 +20,7 @@ public class MessageConstants {
     public static final String OTP_EMAIL_CONTENT_FORMAT = "Please use this OTP {0}";
     public static final String OTP_TOKEN_NOT_PROVIDED = "OTP Token not provided";
     public static final String INVALID_OTP_TOKEN = "Invalid OTP Token";
-    public static final String OTP_RESEND_LIMIT_EXCEEDED = "OTP Limit exceeded";
+    public static final String OTP_RESEND_LIMIT_EXCEEDED = "OTP Resend Limit exceeded";
     public static final String NO_ACTIVE_TRIGGERED_OTP_FOUND = "No active triggered otp found";
     public static final String INCORRECT_OTP = "Incorrect OTP";
     public static final String POST_VERIFICATION_ACTION_NOT_MAPPED_FOR_THE_OTP_PURPOSE =
