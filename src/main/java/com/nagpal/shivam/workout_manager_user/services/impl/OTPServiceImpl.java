@@ -3,10 +3,8 @@ package com.nagpal.shivam.workout_manager_user.services.impl;
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
 import com.nagpal.shivam.workout_manager_user.daos.RoleDao;
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
-import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.VerifyOTPRequestDTO;
-import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.enums.OTPStatus;
@@ -101,19 +99,10 @@ public class OTPServiceImpl implements OTPService {
                                                     jwtotpTokenDTO.getUserId()
                                             )
                                             .compose(v2 -> roleDao.insertUserRole(sqlConnection, jwtotpTokenDTO.getUserId()))
-                                            .compose(id -> sessionService.createNewSession(mongoClient,
-                                                    jwtotpTokenDTO.getUserId()
-                                            )).map(sessionPayload -> {
-                                                LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
-                                                JWTAuthTokenDTO jwtAuthTokenDTO = new JWTAuthTokenDTO();
-                                                jwtAuthTokenDTO.setUserId(jwtAuthTokenDTO.getUserId());
-                                                jwtAuthTokenDTO.setSessionId(sessionPayload.getSessionId());
-                                                jwtAuthTokenDTO.setRoles(new String[]{RoleName.USER.name()});
-
-                                                loginResponseDTO.setAuthToken(jwtService.generateAuthToken(jwtAuthTokenDTO));
-                                                loginResponseDTO.setRefreshToken(sessionPayload.createRefreshToken());
-                                                return loginResponseDTO;
-                                            });
+                                            .compose(id -> sessionService.createNewSessionAndFormLoginResponse(mongoClient,
+                                                    jwtotpTokenDTO.getUserId(), new String[]{RoleName.USER.name()}
+                                            ))
+                                            .map(loginResponseDTO -> loginResponseDTO);
                                     break;
                                 default:
                                     actionPostOTPVerification = Future.failedFuture(

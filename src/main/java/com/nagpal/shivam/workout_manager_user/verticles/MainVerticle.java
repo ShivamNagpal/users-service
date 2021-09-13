@@ -95,7 +95,7 @@ public class MainVerticle extends AbstractVerticle {
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
         JWTService jwtService = new JWTServiceImpl(config);
-        SessionService sessionService = new SessionServiceImpl(config);
+        SessionService sessionService = new SessionServiceImpl(config, jwtService);
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
         OTPService otpService = new OTPServiceImpl(config, pgPool, mongoClient, otpDao, emailService, sessionService,
                 jwtService, userDao, roleDao);

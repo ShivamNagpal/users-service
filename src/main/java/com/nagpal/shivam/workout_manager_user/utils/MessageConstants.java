@@ -26,6 +26,9 @@ public class MessageConstants {
     public static final String POST_VERIFICATION_ACTION_NOT_MAPPED_FOR_THE_OTP_PURPOSE =
             "Post verification action not mapped for the OTP Purpose: {0}";
     public static final String INVALID_AUTH_TOKEN = "Invalid Auth Token";
+    public static final String USER_NOT_FOUND = "User not found";
+    public static final String INVALID_CREDENTIALS = "Invalid Credentials";
+    public static final String USER_ACCOUNT_IS_NOT_ACTIVE = "User account is not active";
 
     private MessageConstants() {
     }
