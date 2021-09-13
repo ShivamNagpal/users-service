@@ -99,7 +99,7 @@ public class MainVerticle extends AbstractVerticle {
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
         OTPService otpService = new OTPServiceImpl(config, pgPool, mongoClient, otpDao, emailService, sessionService,
                 jwtService, userDao, roleDao);
-        UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService);
+        UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao);
 
         new HealthController(vertx, mainRouter, healthService);
         new OTPController(vertx, mainRouter, otpService, jwtService);
