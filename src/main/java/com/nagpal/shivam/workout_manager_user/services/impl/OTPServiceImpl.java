@@ -3,21 +3,26 @@ package com.nagpal.shivam.workout_manager_user.services.impl;
 import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
 import com.nagpal.shivam.workout_manager_user.daos.RoleDao;
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
+import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.VerifyOTPRequestDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.enums.OTPStatus;
+import com.nagpal.shivam.workout_manager_user.enums.RoleName;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.services.EmailService;
 import com.nagpal.shivam.workout_manager_user.services.JWTService;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
+import com.nagpal.shivam.workout_manager_user.services.SessionService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.SqlClient;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -30,19 +35,24 @@ import java.util.Random;
 public class OTPServiceImpl implements OTPService {
     private final JsonObject config;
     private final PgPool pgPool;
+    private final MongoClient mongoClient;
     private final OTPDao otpDao;
     private final EmailService emailService;
+    private final SessionService sessionService;
     private final JWTService jwtService;
     private final UserDao userDao;
     private final RoleDao roleDao;
     private final Random random;
 
-    public OTPServiceImpl(JsonObject config, PgPool pgPool, OTPDao otpDao, EmailService emailService,
-                          JWTService jwtService, UserDao userDao, RoleDao roleDao) {
+    public OTPServiceImpl(JsonObject config, PgPool pgPool, MongoClient mongoClient, OTPDao otpDao,
+                          EmailService emailService, SessionService sessionService, JWTService jwtService,
+                          UserDao userDao, RoleDao roleDao) {
         this.config = config;
         this.pgPool = pgPool;
+        this.mongoClient = mongoClient;
         this.otpDao = otpDao;
         this.emailService = emailService;
+        this.sessionService = sessionService;
         this.jwtService = jwtService;
         this.userDao = userDao;
         this.roleDao = roleDao;
@@ -61,7 +71,7 @@ public class OTPServiceImpl implements OTPService {
     }
 
     @Override
-    public Future<Void> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO, VerifyOTPRequestDTO verifyOTPRequestDTO) {
+    public Future<Object> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO, VerifyOTPRequestDTO verifyOTPRequestDTO) {
         return pgPool.withTransaction(sqlConnection -> otpDao.fetchActiveOTP(
                                 sqlConnection,
                                 jwtotpTokenDTO.getUserId(),
@@ -83,7 +93,7 @@ public class OTPServiceImpl implements OTPService {
                         })
                         .compose(otp -> otpDao.updateOTPStatus(sqlConnection, otp.getId(), OTPStatus.USED))
                         .compose(v -> {
-                            Future<Void> actionPostOTPVerification;
+                            Future<Object> actionPostOTPVerification;
                             switch (jwtotpTokenDTO.getOtpPurpose()) {
                                 case VERIFY_USER:
                                     actionPostOTPVerification = userDao.activateUser(
@@ -91,8 +101,19 @@ public class OTPServiceImpl implements OTPService {
                                                     jwtotpTokenDTO.getUserId()
                                             )
                                             .compose(v2 -> roleDao.insertUserRole(sqlConnection, jwtotpTokenDTO.getUserId()))
-                                            // TODO: Generate JWT Token and Refresh Token
-                                            .compose(id -> Future.succeededFuture());
+                                            .compose(id -> sessionService.createNewSession(mongoClient,
+                                                    jwtotpTokenDTO.getUserId()
+                                            )).map(sessionPayload -> {
+                                                LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+                                                JWTAuthTokenDTO jwtAuthTokenDTO = new JWTAuthTokenDTO();
+                                                jwtAuthTokenDTO.setUserId(jwtAuthTokenDTO.getUserId());
+                                                jwtAuthTokenDTO.setSessionId(sessionPayload.getSessionId());
+                                                jwtAuthTokenDTO.setRoles(new String[]{RoleName.USER.name()});
+
+                                                loginResponseDTO.setAuthToken(jwtService.generateAuthToken(jwtAuthTokenDTO));
+                                                loginResponseDTO.setRefreshToken(sessionPayload.createRefreshToken());
+                                                return loginResponseDTO;
+                                            });
                                     break;
                                 default:
                                     actionPostOTPVerification = Future.failedFuture(

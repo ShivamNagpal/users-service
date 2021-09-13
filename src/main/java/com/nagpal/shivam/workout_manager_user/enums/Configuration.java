@@ -18,10 +18,13 @@ public enum Configuration {
     MAIL_USERNAME("mail.username", "MAIL_USERNAME"),
     MAIL_PASSWORD("mail.password", "MAIL_PASSWORD"),
     OTP_SECRET_TOKEN("otp.secret.token", "OTP_SECRET_TOKEN"),
+    AUTH_TOKEN_PRIVATE_KEY("auth.token.private.key", "AUTH_TOKEN_PRIVATE_KEY"),
+    AUTH_TOKEN_PUBLIC_KEY("auth.token.public.key", "AUTH_TOKEN_PUBLIC_KEY"),
     ;
     public static final List<Configuration> MANDATORY_CONFIGURATIONS =
             List.of(SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD, MONGO_CONNECTION_URI,
-                    MONGO_DATABASE, MAIL_USERNAME, MAIL_PASSWORD, OTP_SECRET_TOKEN);
+                    MONGO_DATABASE, MAIL_USERNAME, MAIL_PASSWORD, OTP_SECRET_TOKEN, AUTH_TOKEN_PRIVATE_KEY,
+                    AUTH_TOKEN_PUBLIC_KEY);
 
     private final String sysKey;
     private final String envKey;

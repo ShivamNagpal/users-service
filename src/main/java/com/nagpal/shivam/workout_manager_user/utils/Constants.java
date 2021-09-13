@@ -32,6 +32,12 @@ public class Constants {
     public static final String OTP_PURPOSE = "otpPurpose";
     public static final String ISSUER_WORKOUT_MANAGER = "WORKOUT_MANAGER";
     public static final String OTP_TOKEN = "otp-token";
+    public static final String SESSION_ID = "sessionId";
+    public static final String ROLES = "roles";
+    public static final String JWT_EXPIRY_TIME = "jwt.expiry.time";
+    public static final String RSA = "RSA";
+    public static final String SESSION_EXPIRY_TIME = "session.expiry.time";
+    public static final String REFRESH_TOKEN_SEPARATOR = "-";
 
     private Constants() {
     }

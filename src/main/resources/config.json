@@ -5,5 +5,7 @@
   "otp.backoff.time": 1800,
   "otp.expiry.time": 300,
   "bcrypt.password.log.rounds": 10,
-  "bcrypt.otp.log.rounds": 4
+  "bcrypt.otp.log.rounds": 4,
+  "jwt.expiry.time": 600,
+  "session.expiry.time": 864000
 }

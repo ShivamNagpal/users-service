@@ -10,8 +10,7 @@ import io.vertx.sqlclient.SqlClient;
 public interface OTPService {
     Future<OTPResponseDTO> resendOTP(JWTOTPTokenDTO jwtotpTokenDTO);
 
-    Future<Void> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO,
-                           VerifyOTPRequestDTO verifyOTPRequestDTO);
+    Future<Object> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO, VerifyOTPRequestDTO verifyOTPRequestDTO);
 
     Future<String> triggerEmailVerification(SqlClient sqlClient, Long userId, String email, OTPPurpose otpPurpose);
 }
