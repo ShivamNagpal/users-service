@@ -23,11 +23,11 @@ public class Constants {
     public static final String USER_ID = "userId";
     public static final String APPLICATION_JSON = "application/json";
     public static final String CONTENT_TYPE = "content-type";
-    public static final int OTP_RETRY_LIMIT = 5;
-    public static final int OTP_BACKOFF_TIME = 30;
-    public static final int OTP_EXPIRY_TIME = 5;
-    public static final int BCRYPT_PASSWORD_LOG_ROUNDS = 10;
-    public static final int BCRYPT_OTP_LOG_ROUNDS = 4;
+    public static final String OTP_RETRY_LIMIT = "otp.retry.limit";
+    public static final String OTP_BACKOFF_TIME = "otp.backoff.time";
+    public static final String OTP_EXPIRY_TIME = "otp.expiry.time";
+    public static final String BCRYPT_PASSWORD_LOG_ROUNDS = "bcrypt.password.log.rounds";
+    public static final String BCRYPT_OTP_LOG_ROUNDS = "bcrypt.otp.log.rounds";
     public static final String EMAIL = "email";
     public static final String OTP_PURPOSE = "otpPurpose";
     public static final String ISSUER_WORKOUT_MANAGER = "WORKOUT_MANAGER";

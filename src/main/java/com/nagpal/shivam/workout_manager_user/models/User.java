@@ -52,7 +52,7 @@ public class User extends BaseModel {
         return userList;
     }
 
-    public static Future<User> fromRequest(JsonObject body) {
+    public static Future<User> fromRequest(JsonObject body, JsonObject config) {
         User user = new User();
         HashMap<String, String> errors = new HashMap<>();
 
@@ -71,8 +71,8 @@ public class User extends BaseModel {
         // TODO: Validate the email
         user.setEmail(body.getString(RequestConstants.EMAIL));
         user.setPassword(
-                BCrypt.hashpw(body.getString(RequestConstants.PASSWORD), BCrypt.gensalt(
-                        Constants.BCRYPT_PASSWORD_LOG_ROUNDS))
+                BCrypt.hashpw(body.getString(RequestConstants.PASSWORD),
+                        BCrypt.gensalt(config.getInteger(Constants.BCRYPT_PASSWORD_LOG_ROUNDS)))
         );
 
         return Future.succeededFuture(user);

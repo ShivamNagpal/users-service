@@ -17,6 +17,7 @@ import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.SqlClient;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -27,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.util.Random;
 
 public class OTPServiceImpl implements OTPService {
+    private final JsonObject config;
     private final PgPool pgPool;
     private final OTPDao otpDao;
     private final EmailService emailService;
@@ -35,8 +37,9 @@ public class OTPServiceImpl implements OTPService {
     private final RoleDao roleDao;
     private final Random random;
 
-    public OTPServiceImpl(PgPool pgPool, OTPDao otpDao, EmailService emailService,
+    public OTPServiceImpl(JsonObject config, PgPool pgPool, OTPDao otpDao, EmailService emailService,
                           JWTService jwtService, UserDao userDao, RoleDao roleDao) {
+        this.config = config;
         this.pgPool = pgPool;
         this.otpDao = otpDao;
         this.emailService = emailService;
@@ -118,11 +121,12 @@ public class OTPServiceImpl implements OTPService {
                         otp.setCount(otp.getCount() + 1);
                         otp.setOtpHash(otpHash);
                         otp.setValidAfter(currentTime);
-                        if (otp.getCount() > Constants.OTP_RETRY_LIMIT) {
+                        if (otp.getCount() > config.getInteger(Constants.OTP_RETRY_LIMIT)) {
                             Future<Void> future = Future.succeededFuture();
                             if (otp.getOtpStatus() == OTPStatus.ACTIVE) {
-                                int backOffMinutes = Constants.OTP_BACKOFF_TIME - Constants.OTP_EXPIRY_TIME;
-                                otp.setValidAfter(currentTime.plusMinutes(backOffMinutes));
+                                int backOffMinutes = config.getInteger(Constants.OTP_BACKOFF_TIME) -
+                                        config.getInteger(Constants.OTP_EXPIRY_TIME);
+                                otp.setValidAfter(currentTime.plusSeconds(backOffMinutes));
                                 otp.setOtpStatus(OTPStatus.OTP_RESEND_LIMIT_REACHED);
                                 future = otpDao.update(sqlClient, otp);
                             }
@@ -161,6 +165,6 @@ public class OTPServiceImpl implements OTPService {
     }
 
     private String hashOTP(int otp) {
-        return BCrypt.hashpw(String.valueOf(otp), BCrypt.gensalt(Constants.BCRYPT_OTP_LOG_ROUNDS));
+        return BCrypt.hashpw(String.valueOf(otp), BCrypt.gensalt(config.getInteger(Constants.BCRYPT_OTP_LOG_ROUNDS)));
     }
 }

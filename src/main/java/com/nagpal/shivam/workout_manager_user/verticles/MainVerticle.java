@@ -90,18 +90,18 @@ public class MainVerticle extends AbstractVerticle {
         setupFilters();
         HealthDao healthDao = new HealthDaoImpl();
         UserDao userDao = new UserDaoImpl();
-        OTPDao otpDao = new OTPDaoImpl();
+        OTPDao otpDao = new OTPDaoImpl(config);
         RoleDao roleDao = new RoleDaoImpl();
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
         JWTService jwtService = new JWTServiceImpl(config);
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
-        OTPService otpService = new OTPServiceImpl(pgPool, otpDao, emailService, jwtService, userDao, roleDao);
+        OTPService otpService = new OTPServiceImpl(config, pgPool, otpDao, emailService, jwtService, userDao, roleDao);
         UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService);
 
         new HealthController(vertx, mainRouter, healthService);
         new OTPController(vertx, mainRouter, otpService, jwtService);
-        new UserController(vertx, mainRouter, userService);
+        new UserController(vertx, config, mainRouter, userService);
     }
 
     private void setupFilters() {

@@ -21,11 +21,13 @@ import java.util.Date;
 
 public class JWTServiceImpl implements com.nagpal.shivam.workout_manager_user.services.JWTService {
 
+    private final JsonObject config;
     private final Algorithm otpSigningAlgorithm;
     private final JWTVerifier otpTokenVerifier;
 
     public JWTServiceImpl(JsonObject config) {
         otpSigningAlgorithm = Algorithm.HMAC512(config.getString(Configuration.OTP_SECRET_TOKEN.getKey()));
+        this.config = config;
         otpTokenVerifier = JWT.require(otpSigningAlgorithm).withIssuer(Constants.ISSUER_WORKOUT_MANAGER).build();
     }
 
@@ -36,7 +38,7 @@ public class JWTServiceImpl implements com.nagpal.shivam.workout_manager_user.se
                 .withClaim(Constants.EMAIL, jwtotpTokenDTO.getEmail())
                 .withClaim(Constants.OTP_PURPOSE, jwtotpTokenDTO.getOtpPurpose().toString())
                 .withExpiresAt(UtilMethods.convertLocalDateTimeToDate(
-                        LocalDateTime.now().plusMinutes(Constants.OTP_EXPIRY_TIME)))
+                        LocalDateTime.now().plusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME))))
                 .withIssuer(Constants.ISSUER_WORKOUT_MANAGER)
                 .withIssuedAt(new Date())
                 .sign(otpSigningAlgorithm);

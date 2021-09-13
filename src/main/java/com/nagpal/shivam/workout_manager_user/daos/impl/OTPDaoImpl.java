@@ -6,6 +6,7 @@ import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.DbUtils;
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 
@@ -27,9 +28,15 @@ public class OTPDaoImpl implements OTPDao {
                     "deleted=$7, time_created=$8, time_last_modified=$9, otp_status=$10 WHERE id=$11";
     public static final String UPDATE_OTP_STATUS = "UPDATE otp SET otp_status=$1, time_last_modified=$2 WHERE id=$3";
 
+    private final JsonObject config;
+
+    public OTPDaoImpl(JsonObject config) {
+        this.config = config;
+    }
+
     @Override
     public Future<Optional<OTP>> fetchAlreadyTriggeredOTP(SqlClient sqlClient, Long userId, String email) {
-        OffsetDateTime lastActiveTime = OffsetDateTime.now().minusMinutes(Constants.OTP_EXPIRY_TIME);
+        OffsetDateTime lastActiveTime = OffsetDateTime.now().minusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME));
         Tuple values = Tuple.of(userId, email, lastActiveTime);
         return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_TRIGGERED_OTP, values, OTP::fromRow);
     }
@@ -37,7 +44,7 @@ public class OTPDaoImpl implements OTPDao {
     @Override
     public Future<Optional<OTP>> fetchActiveOTP(SqlClient sqlClient, Long userId, String email) {
         OffsetDateTime currentTime = OffsetDateTime.now();
-        OffsetDateTime lastActiveTime = currentTime.minusMinutes(Constants.OTP_EXPIRY_TIME);
+        OffsetDateTime lastActiveTime = currentTime.minusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME));
         Tuple values = Tuple.of(userId, email, lastActiveTime, currentTime, OTPStatus.ACTIVE);
         return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_ACTIVE_OTP, values, OTP::fromRow);
     }
