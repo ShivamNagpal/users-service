@@ -36,4 +36,9 @@ public class RequestValidationUtils {
             errors.put(key, MessageConstants.MUST_NOT_BE_BLANK);
         }
     }
+
+    public static <T> Future<T> formErrorResponse(Map<String, String> errors) {
+        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
+                MessageConstants.VALIDATION_ERRORS_IN_THE_REQUEST, JsonObject.mapFrom(errors)));
+    }
 }

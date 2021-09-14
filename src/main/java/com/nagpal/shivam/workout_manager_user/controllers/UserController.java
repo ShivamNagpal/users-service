@@ -1,5 +1,6 @@
 package com.nagpal.shivam.workout_manager_user.controllers;
 
+import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
 import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
 import com.nagpal.shivam.workout_manager_user.models.User;
@@ -28,6 +29,7 @@ public class UserController {
 
     private void setupEndpoints() {
         signUp();
+        login();
     }
 
     private void signUp() {
@@ -38,6 +40,19 @@ public class UserController {
                         .onSuccess(otpResponseDTO -> routingContext.response()
                                 .setStatusCode(HttpResponseStatus.CREATED.code())
                                 .end(Json.encodePrettily(ResponseWrapper.success(otpResponseDTO)))
+                        )
+                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
+                );
+    }
+
+    private void login() {
+        router.post(RoutingConstants.LOGIN)
+                .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                        .compose(LoginRequestDTO::fromRequest)
+                        .compose(userService::login)
+                        .onSuccess(obj -> routingContext.response()
+                                .setStatusCode(HttpResponseStatus.OK.code())
+                                .end(Json.encodePrettily(ResponseWrapper.success(obj)))
                         )
                         .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
                 );

@@ -29,6 +29,7 @@ public class MessageConstants {
     public static final String USER_NOT_FOUND = "User not found";
     public static final String INVALID_CREDENTIALS = "Invalid Credentials";
     public static final String USER_ACCOUNT_IS_NOT_ACTIVE = "User account is not active";
+    public static final String USER_ACCOUNT_IS_UNVERIFIED = "User account is unverified";
 
     private MessageConstants() {
     }

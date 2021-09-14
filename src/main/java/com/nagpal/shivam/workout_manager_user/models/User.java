@@ -1,9 +1,10 @@
 package com.nagpal.shivam.workout_manager_user.models;
 
 import com.nagpal.shivam.workout_manager_user.enums.AccountStatus;
-import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
-import com.nagpal.shivam.workout_manager_user.utils.*;
-import io.netty.handler.codec.http.HttpResponseStatus;
+import com.nagpal.shivam.workout_manager_user.utils.Constants;
+import com.nagpal.shivam.workout_manager_user.utils.ModelConstants;
+import com.nagpal.shivam.workout_manager_user.utils.RequestConstants;
+import com.nagpal.shivam.workout_manager_user.utils.RequestValidationUtils;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
@@ -62,8 +63,7 @@ public class User extends BaseModel {
         RequestValidationUtils.validateNotBlank(body, RequestConstants.PASSWORD, errors);
 
         if (!errors.isEmpty()) {
-            return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                    MessageConstants.VALIDATION_ERRORS_IN_THE_REQUEST, JsonObject.mapFrom(errors)));
+            return RequestValidationUtils.formErrorResponse(errors);
         }
 
         user.setFirstName(body.getString(RequestConstants.FIRST_NAME));
