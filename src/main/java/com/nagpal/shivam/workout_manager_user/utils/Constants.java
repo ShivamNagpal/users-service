@@ -38,6 +38,7 @@ public class Constants {
     public static final String RSA = "RSA";
     public static final String SESSION_EXPIRY_TIME = "session.expiry.time";
     public static final String REFRESH_TOKEN_SEPARATOR = "-";
+    public static final String DOLLAR_SET = "$set";
 
     private Constants() {
     }

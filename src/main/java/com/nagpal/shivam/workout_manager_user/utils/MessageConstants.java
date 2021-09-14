@@ -30,6 +30,9 @@ public class MessageConstants {
     public static final String INVALID_CREDENTIALS = "Invalid Credentials";
     public static final String USER_ACCOUNT_IS_NOT_ACTIVE = "User account is not active";
     public static final String USER_ACCOUNT_IS_UNVERIFIED = "User account is unverified";
+    public static final String INVALID_REFRESH_TOKEN = "Invalid refresh token";
+    public static final String SESSION_HAS_EXPIRED = "Session has expired";
+    public static final String SESSION_IS_NOT_ACTIVE = "Session is not active";
 
     private MessageConstants() {
     }

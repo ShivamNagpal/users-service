@@ -28,6 +28,8 @@ public class UserDaoImpl implements UserDao {
 
     public static final String SELECT_USER_BY_EMAIL = "SELECT * FROM \"user\" where email=$1";
 
+    public static final String SELECT_USER_BY_ID = "SELECT * FROM \"user\" where id=$1";
+
     @Override
     public Future<Long> signUp(SqlClient sqlClient, User user) {
         Tuple values = Tuple.of(
@@ -73,5 +75,11 @@ public class UserDaoImpl implements UserDao {
     public Future<Optional<User>> getUserByEmail(SqlClient sqlClient, String email) {
         Tuple values = Tuple.of(email);
         return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_USER_BY_EMAIL, values, User::fromRow);
+    }
+
+    @Override
+    public Future<Optional<User>> getById(SqlClient sqlClient, Long id) {
+        Tuple values = Tuple.of(id);
+        return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_USER_BY_ID, values, User::fromRow);
     }
 }

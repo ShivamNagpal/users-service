@@ -34,7 +34,12 @@ public class Session extends BaseDocument {
         session.setCurrentRefreshToken(UUID.randomUUID().toString());
         session.setUsedRefreshTokens(Set.of());
         session.setStatus(SessionStatus.ACTIVE);
-        session.setExpiryTime(currentTimeMillis + config.getInteger(Constants.SESSION_EXPIRY_TIME));
+        session.setExpiryTime(currentTimeMillis + config.getInteger(Constants.SESSION_EXPIRY_TIME) * 1000);
         return session;
+    }
+
+    public void refresh() {
+        this.getUsedRefreshTokens().add(this.getCurrentRefreshToken());
+        this.setCurrentRefreshToken(UUID.randomUUID().toString());
     }
 }

@@ -9,6 +9,8 @@ public class RoutingConstants {
     public static final String RESEND_OTP = "/resend-otp";
     public static final String VERIFY_OTP = "/verify-otp";
     public static final String LOGIN = "/login";
+    public static final String SESSION = "/session";
+    public static final String REFRESH_TOKEN = "/refresh-token";
 
     private RoutingConstants() {
     }

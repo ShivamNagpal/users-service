@@ -4,15 +4,10 @@ import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfigurati
 import com.nagpal.shivam.workout_manager_user.configurations.EmailConfiguration;
 import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
 import com.nagpal.shivam.workout_manager_user.controllers.OTPController;
+import com.nagpal.shivam.workout_manager_user.controllers.SessionController;
 import com.nagpal.shivam.workout_manager_user.controllers.UserController;
-import com.nagpal.shivam.workout_manager_user.daos.HealthDao;
-import com.nagpal.shivam.workout_manager_user.daos.OTPDao;
-import com.nagpal.shivam.workout_manager_user.daos.RoleDao;
-import com.nagpal.shivam.workout_manager_user.daos.UserDao;
-import com.nagpal.shivam.workout_manager_user.daos.impl.HealthDaoImpl;
-import com.nagpal.shivam.workout_manager_user.daos.impl.OTPDaoImpl;
-import com.nagpal.shivam.workout_manager_user.daos.impl.RoleDaoImpl;
-import com.nagpal.shivam.workout_manager_user.daos.impl.UserDaoImpl;
+import com.nagpal.shivam.workout_manager_user.daos.*;
+import com.nagpal.shivam.workout_manager_user.daos.impl.*;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.services.*;
 import com.nagpal.shivam.workout_manager_user.services.impl.*;
@@ -92,16 +87,20 @@ public class MainVerticle extends AbstractVerticle {
         UserDao userDao = new UserDaoImpl();
         OTPDao otpDao = new OTPDaoImpl(config);
         RoleDao roleDao = new RoleDaoImpl();
+        SessionDao sessionDao = new SessionDaoImpl();
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
         JWTService jwtService = new JWTServiceImpl(config);
-        SessionService sessionService = new SessionServiceImpl(config, jwtService);
+        SessionService sessionService = new SessionServiceImpl(pgPool, mongoClient, config, sessionDao, jwtService,
+                userDao, roleDao
+        );
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
         OTPService otpService = new OTPServiceImpl(config, pgPool, mongoClient, otpDao, emailService, sessionService,
                 jwtService, userDao, roleDao);
         UserService userService =
                 new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao);
 
+        new SessionController(vertx, mainRouter, sessionService);
         new HealthController(vertx, mainRouter, healthService);
         new OTPController(vertx, mainRouter, otpService, jwtService);
         new UserController(vertx, config, mainRouter, userService);

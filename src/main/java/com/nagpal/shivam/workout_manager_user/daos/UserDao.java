@@ -12,4 +12,6 @@ public interface UserDao {
     Future<Void> activateUser(SqlClient sqlClient, Long userId);
 
     Future<Optional<User>> getUserByEmail(SqlClient sqlClient, String email);
+
+    Future<Optional<User>> getById(SqlClient sqlClient, Long id);
 }
