@@ -9,8 +9,10 @@ import com.nagpal.shivam.workout_manager_user.controllers.UserController;
 import com.nagpal.shivam.workout_manager_user.daos.*;
 import com.nagpal.shivam.workout_manager_user.daos.impl.*;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
+import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
 import com.nagpal.shivam.workout_manager_user.services.*;
 import com.nagpal.shivam.workout_manager_user.services.impl.*;
+import com.nagpal.shivam.workout_manager_user.utils.AuthenticationUtils;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.vertx.core.*;
@@ -82,7 +84,9 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void initComponents(JsonObject config) {
-        setupFilters();
+        JWTService jwtService = new JWTServiceImpl(config);
+        setupFilters(jwtService);
+
         HealthDao healthDao = new HealthDaoImpl();
         UserDao userDao = new UserDaoImpl();
         OTPDao otpDao = new OTPDaoImpl(config);
@@ -90,7 +94,6 @@ public class MainVerticle extends AbstractVerticle {
         SessionDao sessionDao = new SessionDaoImpl();
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
-        JWTService jwtService = new JWTServiceImpl(config);
         SessionService sessionService = new SessionServiceImpl(pgPool, mongoClient, config, sessionDao, jwtService,
                 userDao, roleDao
         );
@@ -106,12 +109,15 @@ public class MainVerticle extends AbstractVerticle {
         new UserController(vertx, config, mainRouter, userService);
     }
 
-    private void setupFilters() {
-        mainRouter.route()
-                .handler(BodyHandler.create());
+    private void setupFilters(JWTService jwtService) {
+        mainRouter.route().handler(BodyHandler.create());
         mainRouter.route().handler(routingContext -> {
             routingContext.response().putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
-            routingContext.next();
+
+            AuthenticationUtils.authenticate(routingContext.request(), jwtService)
+                    .onSuccess(v -> routingContext.next())
+                    .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()));
         });
     }
+
 }

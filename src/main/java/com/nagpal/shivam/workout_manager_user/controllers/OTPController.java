@@ -46,7 +46,7 @@ public class OTPController {
                         GlobalExceptionHandler.handle(exception, routingContext.response());
                         return;
                     }
-                    jwtService.verifyOTPToken(otpToken)
+                    jwtService.verifyAndDecodeOTPToken(otpToken)
                             .compose(otpService::resendOTP)
                             .onSuccess(otpResponseDTO -> routingContext.response()
                                     .setStatusCode(HttpResponseStatus.OK.code())
@@ -70,7 +70,7 @@ public class OTPController {
                     }
                     RequestValidationUtils.fetchBodyAsJson(routingContext)
                             .compose(VerifyOTPRequestDTO::fromRequest)
-                            .compose(verifyOTPRequestDTO -> jwtService.verifyOTPToken(otpToken)
+                            .compose(verifyOTPRequestDTO -> jwtService.verifyAndDecodeOTPToken(otpToken)
                                     .compose(
                                             jWTOTPTokenDTO -> otpService.verifyOTP(jWTOTPTokenDTO, verifyOTPRequestDTO)
                                     )

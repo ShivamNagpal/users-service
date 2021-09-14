@@ -39,6 +39,8 @@ public class Constants {
     public static final String SESSION_EXPIRY_TIME = "session.expiry.time";
     public static final String REFRESH_TOKEN_SEPARATOR = "-";
     public static final String DOLLAR_SET = "$set";
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String BEARER_ = "Bearer ";
 
     private Constants() {
     }

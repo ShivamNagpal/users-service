@@ -10,6 +10,7 @@ import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
+import com.nagpal.shivam.workout_manager_user.services.JWTService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import com.nagpal.shivam.workout_manager_user.utils.UtilMethods;
@@ -27,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Date;
 
-public class JWTServiceImpl implements com.nagpal.shivam.workout_manager_user.services.JWTService {
+public class JWTServiceImpl implements JWTService {
 
     private final JsonObject config;
     private final Algorithm otpSigningAlgorithm;
@@ -69,7 +70,7 @@ public class JWTServiceImpl implements com.nagpal.shivam.workout_manager_user.se
     }
 
     @Override
-    public Future<JWTOTPTokenDTO> verifyOTPToken(String otpToken) {
+    public Future<JWTOTPTokenDTO> verifyAndDecodeOTPToken(String otpToken) {
         DecodedJWT decodedJWT;
         try {
             decodedJWT = otpTokenVerifier.verify(otpToken);
@@ -102,10 +103,10 @@ public class JWTServiceImpl implements com.nagpal.shivam.workout_manager_user.se
     }
 
     @Override
-    public Future<JWTAuthTokenDTO> verifyAuthToken(String authToken) {
-        DecodedJWT decodedJWT;
+    public Future<Void> verifyAuthToken(String authToken) {
         try {
-            decodedJWT = authTokenVerifier.verify(authToken);
+            authTokenVerifier.verify(authToken);
+            return Future.succeededFuture();
         } catch (JWTVerificationException e) {
             return Future.failedFuture(
                     new ResponseException(HttpResponseStatus.BAD_REQUEST.code(), MessageConstants.INVALID_AUTH_TOKEN,
@@ -113,10 +114,15 @@ public class JWTServiceImpl implements com.nagpal.shivam.workout_manager_user.se
                     )
             );
         }
+    }
+
+    @Override
+    public JWTAuthTokenDTO decodeAuthToken(String authToken) {
+        DecodedJWT decodedJWT = JWT.decode(authToken);
         JWTAuthTokenDTO jwtAuthTokenDTO = new JWTAuthTokenDTO();
         jwtAuthTokenDTO.setUserId(decodedJWT.getClaim(Constants.USER_ID).asLong());
         jwtAuthTokenDTO.setSessionId(decodedJWT.getClaim(Constants.SESSION_ID).asString());
         jwtAuthTokenDTO.setRoles(decodedJWT.getClaim(Constants.ROLES).asArray(String.class));
-        return Future.succeededFuture(jwtAuthTokenDTO);
+        return jwtAuthTokenDTO;
     }
 }

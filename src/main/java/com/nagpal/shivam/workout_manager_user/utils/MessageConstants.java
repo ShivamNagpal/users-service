@@ -33,6 +33,9 @@ public class MessageConstants {
     public static final String INVALID_REFRESH_TOKEN = "Invalid refresh token";
     public static final String SESSION_HAS_EXPIRED = "Session has expired";
     public static final String SESSION_IS_NOT_ACTIVE = "Session is not active";
+    public static final String AUTHORIZATION_TOKEN_MUST_START_WITH_THE_BEARER =
+            "Authorization token must start with the Bearer";
+    public static final String AUTHORIZATION_HEADER_NOT_PROVIDED = "Authorization header not provided";
 
     private MessageConstants() {
     }
