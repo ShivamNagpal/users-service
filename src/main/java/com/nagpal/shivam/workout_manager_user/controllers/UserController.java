@@ -1,5 +1,6 @@
 package com.nagpal.shivam.workout_manager_user.controllers;
 
+import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
 import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
@@ -38,6 +39,7 @@ public class UserController {
         signUp();
         login();
         logout();
+        getById();
     }
 
     private void signUp() {
@@ -73,14 +75,31 @@ public class UserController {
                     RequestValidationUtils.getBooleanQueryParam(request, RequestConstants.ALL_SESSIONS, false)
                             .compose(allSessions -> {
                                 String authorizationValue = AuthenticationUtils.getAuthToken(request);
-                                return userService.logout(jwtService.decodeAuthToken(authorizationValue), allSessions);
+                                JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authorizationValue);
+                                return userService.logout(jwtAuthTokenDTO, allSessions);
                             })
                             .onSuccess(obj -> routingContext.response()
                                     .setStatusCode(HttpResponseStatus.OK.code())
                                     .end(Json.encodePrettily(ResponseWrapper.success(obj)))
                             )
-                            .onFailure(
-                                    throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()));
+                            .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                            );
+                });
+    }
+
+    private void getById() {
+        router.get(RoutingConstants.ME)
+                .handler(routingContext -> {
+                    HttpServerRequest request = routingContext.request();
+                    String authToken = AuthenticationUtils.getAuthToken(request);
+                    JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
+                    userService.getById(jwtAuthTokenDTO)
+                            .onSuccess(userResponseDTO -> routingContext.response()
+                                    .setStatusCode(HttpResponseStatus.OK.code())
+                                    .end(Json.encodePrettily(ResponseWrapper.success(userResponseDTO)))
+                            )
+                            .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                            );
                 });
     }
 }

@@ -7,21 +7,26 @@ import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.response.UserResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.AccountStatus;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
+import com.nagpal.shivam.workout_manager_user.models.Role;
 import com.nagpal.shivam.workout_manager_user.models.User;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
 import com.nagpal.shivam.workout_manager_user.services.SessionService;
 import com.nagpal.shivam.workout_manager_user.services.UserService;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.SqlConnection;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public class UserServiceImpl implements UserService {
     private final PgPool pgPool;
@@ -125,5 +130,33 @@ public class UserServiceImpl implements UserService {
         } else {
             return sessionDao.logoutSession(mongoClient, jwtAuthTokenDTO.getSessionId());
         }
+    }
+
+    @Override
+    public Future<UserResponseDTO> getById(JWTAuthTokenDTO jwtAuthTokenDTO) {
+        return pgPool.withTransaction(sqlConnection -> {
+            Future<User> userFuture = getUserById(sqlConnection, jwtAuthTokenDTO.getUserId());
+            Future<List<Role>> rolesFuture =
+                    roleDao.fetchRolesByUserIdAndDeleted(sqlConnection, jwtAuthTokenDTO.getUserId(), false);
+            return CompositeFuture.all(userFuture, rolesFuture)
+                    .map(compositeFuture -> {
+                        User user = compositeFuture.resultAt(0);
+                        List<Role> roles = compositeFuture.resultAt(1);
+                        return UserResponseDTO.from(user, roles);
+                    });
+        });
+    }
+
+    private Future<User> getUserById(SqlConnection sqlConnection, Long userId) {
+        return userDao.getById(sqlConnection, userId)
+                .compose(userOptional -> {
+                    if (userOptional.isEmpty()) {
+                        return Future.failedFuture(
+                                new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
+                                        MessageConstants.USER_NOT_FOUND, null)
+                        );
+                    }
+                    return Future.succeededFuture(userOptional.get());
+                });
     }
 }
