@@ -12,5 +12,9 @@ public interface SessionDao {
 
     Future<Void> updateStatus(MongoClient mongoClient, String id, SessionStatus status);
 
+    Future<Void> logoutSession(MongoClient mongoClient, String id);
+
+    Future<Void> logoutAllSessions(MongoClient mongoClient, Long userId);
+
     Future<Void> updateRefreshToken(MongoClient mongoClient, Session session);
 }

@@ -30,4 +30,8 @@ public class AuthenticationUtils {
         String authToken = authorizationValue.substring(7);
         return jwtService.verifyAuthToken(authToken);
     }
+
+    public static String getAuthToken(HttpServerRequest request) {
+        return request.getHeader(Constants.AUTHORIZATION).substring(7);
+    }
 }

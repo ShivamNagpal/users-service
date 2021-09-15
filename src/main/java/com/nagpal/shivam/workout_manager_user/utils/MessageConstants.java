@@ -36,6 +36,8 @@ public class MessageConstants {
     public static final String AUTHORIZATION_TOKEN_MUST_START_WITH_THE_BEARER =
             "Authorization token must start with the Bearer";
     public static final String AUTHORIZATION_HEADER_NOT_PROVIDED = "Authorization header not provided";
+    public static final String QUERY_PARAM_MUST_HAVE_ONLY_BOOLEAN_VALUES =
+            "Query param: {0} must have only boolean values";
 
     private MessageConstants() {
     }

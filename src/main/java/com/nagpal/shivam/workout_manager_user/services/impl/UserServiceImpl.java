@@ -1,7 +1,9 @@
 package com.nagpal.shivam.workout_manager_user.services.impl;
 
 import com.nagpal.shivam.workout_manager_user.daos.RoleDao;
+import com.nagpal.shivam.workout_manager_user.daos.SessionDao;
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
+import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
@@ -28,15 +30,17 @@ public class UserServiceImpl implements UserService {
     private final OTPService otpService;
     private final SessionService sessionService;
     private final RoleDao roleDao;
+    private final SessionDao sessionDao;
 
     public UserServiceImpl(PgPool pgPool, MongoClient mongoClient, UserDao userDao, OTPService otpService,
-                           SessionService sessionService, RoleDao roleDao) {
+                           SessionService sessionService, RoleDao roleDao, SessionDao sessionDao) {
         this.pgPool = pgPool;
         this.mongoClient = mongoClient;
         this.userDao = userDao;
         this.otpService = otpService;
         this.sessionService = sessionService;
         this.roleDao = roleDao;
+        this.sessionDao = sessionDao;
     }
 
     @Override
@@ -112,5 +116,14 @@ public class UserServiceImpl implements UserService {
                                     });
                         })
         );
+    }
+
+    @Override
+    public Future<Void> logout(JWTAuthTokenDTO jwtAuthTokenDTO, boolean allSession) {
+        if (allSession) {
+            return sessionDao.logoutAllSessions(mongoClient, jwtAuthTokenDTO.getUserId());
+        } else {
+            return sessionDao.logoutSession(mongoClient, jwtAuthTokenDTO.getSessionId());
+        }
     }
 }

@@ -3,9 +3,11 @@ package com.nagpal.shivam.workout_manager_user.utils;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 
@@ -40,5 +42,25 @@ public class RequestValidationUtils {
     public static <T> Future<T> formErrorResponse(Map<String, String> errors) {
         return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
                 MessageConstants.VALIDATION_ERRORS_IN_THE_REQUEST, JsonObject.mapFrom(errors)));
+    }
+
+    public static Future<Boolean> getBooleanQueryParam(HttpServerRequest request, String key) {
+        String paramVal = request.getParam(key);
+        if (paramVal == null) {
+            return Future.succeededFuture(null);
+        }
+        if (paramVal.equalsIgnoreCase(Constants.TRUE)) {
+            return Future.succeededFuture(true);
+        } else if (paramVal.equalsIgnoreCase(Constants.FALSE)) {
+            return Future.succeededFuture(false);
+        }
+        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
+                MessageFormat.format(MessageConstants.QUERY_PARAM_MUST_HAVE_ONLY_BOOLEAN_VALUES, key), null
+        ));
+    }
+
+    public static Future<Boolean> getBooleanQueryParam(HttpServerRequest request, String key, boolean defaultValue) {
+        return getBooleanQueryParam(request, key)
+                .map(value -> Objects.requireNonNullElse(value, defaultValue));
     }
 }

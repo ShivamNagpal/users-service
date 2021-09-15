@@ -15,6 +15,7 @@ public class RoutingConstants {
     public static final String HEALTH = "/health";
     public static final String PATH_SEPARATOR = "/";
     public static final String DB = "/db";
+    public static final String LOGOUT = "/logout";
 
     public static final Set<String> PUBLIC_ROUTES = Set.of(
             HEALTH,

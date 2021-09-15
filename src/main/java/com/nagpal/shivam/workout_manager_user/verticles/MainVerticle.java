@@ -101,12 +101,12 @@ public class MainVerticle extends AbstractVerticle {
         OTPService otpService = new OTPServiceImpl(config, pgPool, mongoClient, otpDao, emailService, sessionService,
                 jwtService, userDao, roleDao);
         UserService userService =
-                new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao);
+                new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao, sessionDao);
 
         new SessionController(vertx, mainRouter, sessionService);
         new HealthController(vertx, mainRouter, healthService);
         new OTPController(vertx, mainRouter, otpService, jwtService);
-        new UserController(vertx, config, mainRouter, userService);
+        new UserController(vertx, config, mainRouter, userService, jwtService);
     }
 
     private void setupFilters(JWTService jwtService) {

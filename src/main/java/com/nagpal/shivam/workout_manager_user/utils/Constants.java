@@ -41,6 +41,8 @@ public class Constants {
     public static final String DOLLAR_SET = "$set";
     public static final String AUTHORIZATION = "Authorization";
     public static final String BEARER_ = "Bearer ";
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
 
     private Constants() {
     }

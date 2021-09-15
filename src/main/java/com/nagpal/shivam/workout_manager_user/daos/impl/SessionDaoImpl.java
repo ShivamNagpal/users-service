@@ -9,6 +9,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.UpdateOptions;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -35,7 +36,33 @@ public class SessionDaoImpl implements SessionDao {
                         )
                 )
                 .compose(mongoClientUpdateResult -> Future.succeededFuture());
+    }
 
+    @Override
+    public Future<Void> logoutSession(MongoClient mongoClient, String id) {
+        return mongoClient.updateCollection(Constants.SESSION,
+                        new JsonObject().put(DocumentConstants.ID, id)
+                                .put(DocumentConstants.STATUS, SessionStatus.ACTIVE),
+                        new JsonObject().put(Constants.DOLLAR_SET, new JsonObject()
+                                .put(DocumentConstants.STATUS, SessionStatus.CLOSED)
+                                .put(DocumentConstants.TIME_LAST_MODIFIED, System.currentTimeMillis())
+                        )
+                )
+                .compose(mongoClientUpdateResult -> Future.succeededFuture());
+    }
+
+    @Override
+    public Future<Void> logoutAllSessions(MongoClient mongoClient, Long userId) {
+        return mongoClient.updateCollectionWithOptions(Constants.SESSION,
+                        new JsonObject().put(DocumentConstants.USER_ID, userId)
+                                .put(DocumentConstants.STATUS, SessionStatus.ACTIVE),
+                        new JsonObject().put(Constants.DOLLAR_SET, new JsonObject()
+                                .put(DocumentConstants.STATUS, SessionStatus.CLOSED)
+                                .put(DocumentConstants.TIME_LAST_MODIFIED, System.currentTimeMillis())
+                        ),
+                        new UpdateOptions().setMulti(true)
+                )
+                .compose(mongoClientUpdateResult -> Future.succeededFuture());
     }
 
     @Override
