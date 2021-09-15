@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.services;
 
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
@@ -16,4 +17,6 @@ public interface UserService {
     Future<Void> logout(JWTAuthTokenDTO jwtAuthTokenDTO, boolean allSession);
 
     Future<UserResponseDTO> getById(JWTAuthTokenDTO jwtAuthTokenDTO);
+
+    Future<UserResponseDTO> update(JWTAuthTokenDTO jwtAuthTokenDTO, UserUpdateRequestDTO userUpdateRequestDTO);
 }

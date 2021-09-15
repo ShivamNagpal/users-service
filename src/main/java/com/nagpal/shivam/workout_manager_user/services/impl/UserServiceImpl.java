@@ -4,6 +4,7 @@ import com.nagpal.shivam.workout_manager_user.daos.RoleDao;
 import com.nagpal.shivam.workout_manager_user.daos.SessionDao;
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
@@ -145,6 +146,17 @@ public class UserServiceImpl implements UserService {
                         return UserResponseDTO.from(user, roles);
                     });
         });
+    }
+
+    @Override
+    public Future<UserResponseDTO> update(JWTAuthTokenDTO jwtAuthTokenDTO, UserUpdateRequestDTO userUpdateRequestDTO) {
+        return pgPool.withTransaction(sqlConnection -> getUserById(sqlConnection, jwtAuthTokenDTO.getUserId())
+                .compose(user -> {
+                    user.setFirstName(userUpdateRequestDTO.getFirstName());
+                    user.setLastName(userUpdateRequestDTO.getLastName());
+                    return userDao.update(sqlConnection, user)
+                            .map(v -> UserResponseDTO.from(user, null));
+                }));
     }
 
     private Future<User> getUserById(SqlConnection sqlConnection, Long userId) {

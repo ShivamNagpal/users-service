@@ -30,6 +30,9 @@ public class UserDaoImpl implements UserDao {
 
     public static final String SELECT_USER_BY_ID = "SELECT * FROM \"user\" where id=$1";
 
+    public static final String UPDATE_USER =
+            "UPDATE \"user\" SET first_name=$1, last_name=$2, time_last_modified=$3 WHERE id=$4";
+
     @Override
     public Future<Long> signUp(SqlClient sqlClient, User user) {
         Tuple values = Tuple.of(
@@ -81,5 +84,16 @@ public class UserDaoImpl implements UserDao {
     public Future<Optional<User>> getById(SqlClient sqlClient, Long id) {
         Tuple values = Tuple.of(id);
         return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_USER_BY_ID, values, User::fromRow);
+    }
+
+    @Override
+    public Future<Void> update(SqlClient sqlClient, User user) {
+        Tuple values = Tuple.of(
+                user.getFirstName(),
+                user.getLastName(),
+                OffsetDateTime.now(),
+                user.getId()
+        );
+        return DbUtils.executeQuery(sqlClient, UPDATE_USER, values);
     }
 }

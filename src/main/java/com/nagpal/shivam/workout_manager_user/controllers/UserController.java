@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.controllers;
 
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
 import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
@@ -40,6 +41,7 @@ public class UserController {
         login();
         logout();
         getById();
+        update();
     }
 
     private void signUp() {
@@ -101,5 +103,23 @@ public class UserController {
                             .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
                             );
                 });
+    }
+
+    private void update() {
+        router.put(RoutingConstants.ME)
+                .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                        .compose(UserUpdateRequestDTO::fromRequest)
+                        .compose(userUpdateRequestDTO -> {
+                            HttpServerRequest request = routingContext.request();
+                            String authToken = AuthenticationUtils.getAuthToken(request);
+                            JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
+                            return userService.update(jwtAuthTokenDTO, userUpdateRequestDTO);
+                        })
+                        .onSuccess(userResponseDTO -> routingContext.response()
+                                .setStatusCode(HttpResponseStatus.OK.code())
+                                .end(Json.encodePrettily(ResponseWrapper.success(userResponseDTO)))
+                        )
+                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                        ));
     }
 }
