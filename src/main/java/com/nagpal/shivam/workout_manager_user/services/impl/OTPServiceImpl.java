@@ -104,6 +104,12 @@ public class OTPServiceImpl implements OTPService {
                                             ))
                                             .map(loginResponseDTO -> loginResponseDTO);
                                     break;
+                                case UPDATE_EMAIL:
+                                    actionPostOTPVerification = userDao.updateEmail(sqlConnection,
+                                                    jwtotpTokenDTO.getUserId(), jwtotpTokenDTO.getEmail()
+                                            )
+                                            .compose(v2 -> Future.succeededFuture());
+                                    break;
                                 default:
                                     actionPostOTPVerification = Future.failedFuture(
                                             MessageFormat.format(

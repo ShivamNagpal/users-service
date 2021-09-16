@@ -38,6 +38,7 @@ public class MessageConstants {
     public static final String AUTHORIZATION_HEADER_NOT_PROVIDED = "Authorization header not provided";
     public static final String QUERY_PARAM_MUST_HAVE_ONLY_BOOLEAN_VALUES =
             "Query param: {0} must have only boolean values";
+    public static final String NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL = "New email cannot be same as the old email";
 
     private MessageConstants() {
     }

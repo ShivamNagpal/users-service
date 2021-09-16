@@ -16,4 +16,6 @@ public interface UserDao {
     Future<Optional<User>> getById(SqlClient sqlClient, Long id);
 
     Future<Void> update(SqlClient sqlClient, User user);
+
+    Future<Void> updateEmail(SqlClient sqlClient, Long userId, String email);
 }

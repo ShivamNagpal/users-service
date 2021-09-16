@@ -17,6 +17,7 @@ public class RoutingConstants {
     public static final String DB = "/db";
     public static final String LOGOUT = "/logout";
     public static final String ME = "/me";
+    public static final String EMAIL = "/email";
 
     public static final Set<String> PUBLIC_ROUTES = Set.of(
             HEALTH,

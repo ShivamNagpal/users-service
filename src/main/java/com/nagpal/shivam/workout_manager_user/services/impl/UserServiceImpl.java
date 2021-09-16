@@ -5,6 +5,7 @@ import com.nagpal.shivam.workout_manager_user.daos.SessionDao;
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.request.EmailUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
@@ -156,6 +157,27 @@ public class UserServiceImpl implements UserService {
                     user.setLastName(userUpdateRequestDTO.getLastName());
                     return userDao.update(sqlConnection, user)
                             .map(v -> UserResponseDTO.from(user, null));
+                }));
+    }
+
+    @Override
+    public Future<OTPResponseDTO> updateEmail(JWTAuthTokenDTO jwtAuthTokenDTO,
+                                              EmailUpdateRequestDTO emailUpdateRequestDTO) {
+        return pgPool.withTransaction(sqlConnection -> getUserById(sqlConnection, jwtAuthTokenDTO.getUserId())
+                .compose(user -> {
+                    if (user.getEmail().equals(emailUpdateRequestDTO.getEmail())) {
+                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                MessageConstants.NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL, null
+                        ));
+                    }
+                    return otpService.triggerEmailVerification(sqlConnection, jwtAuthTokenDTO.getUserId(),
+                                    emailUpdateRequestDTO.getEmail(), OTPPurpose.UPDATE_EMAIL
+                            )
+                            .map(otpToken -> {
+                                OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
+                                otpResponseDTO.setOtpToken(otpToken);
+                                return otpResponseDTO;
+                            });
                 }));
     }
 

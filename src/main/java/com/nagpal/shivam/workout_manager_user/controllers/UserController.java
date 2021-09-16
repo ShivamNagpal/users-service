@@ -2,6 +2,7 @@ package com.nagpal.shivam.workout_manager_user.controllers;
 
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.request.EmailUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
 import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
@@ -42,6 +43,7 @@ public class UserController {
         logout();
         getById();
         update();
+        updateEmail();
     }
 
     private void signUp() {
@@ -121,5 +123,23 @@ public class UserController {
                         )
                         .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
                         ));
+    }
+
+    private void updateEmail() {
+        router.patch(RoutingConstants.EMAIL)
+                .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                        .compose(EmailUpdateRequestDTO::fromRequest)
+                        .compose(emailUpdateRequestDTO -> {
+                            String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
+                            JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
+                            return userService.updateEmail(jwtAuthTokenDTO, emailUpdateRequestDTO);
+                        })
+                        .onSuccess(otpResponseDTO -> routingContext.response()
+                                .setStatusCode(HttpResponseStatus.OK.code())
+                                .end(Json.encodePrettily(ResponseWrapper.success(otpResponseDTO)))
+                        )
+                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                        )
+                );
     }
 }

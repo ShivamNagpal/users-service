@@ -33,6 +33,8 @@ public class UserDaoImpl implements UserDao {
     public static final String UPDATE_USER =
             "UPDATE \"user\" SET first_name=$1, last_name=$2, time_last_modified=$3 WHERE id=$4";
 
+    public static final String UPDATE_EMAIL = "UPDATE \"user\" SET email=$1, time_last_modified=$2 WHERE id=$3";
+
     @Override
     public Future<Long> signUp(SqlClient sqlClient, User user) {
         Tuple values = Tuple.of(
@@ -95,5 +97,15 @@ public class UserDaoImpl implements UserDao {
                 user.getId()
         );
         return DbUtils.executeQuery(sqlClient, UPDATE_USER, values);
+    }
+
+    @Override
+    public Future<Void> updateEmail(SqlClient sqlClient, Long userId, String email) {
+        Tuple values = Tuple.of(
+                email,
+                OffsetDateTime.now(),
+                userId
+        );
+        return DbUtils.executeQuery(sqlClient, UPDATE_EMAIL, values);
     }
 }
