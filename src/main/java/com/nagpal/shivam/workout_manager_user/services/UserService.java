@@ -4,6 +4,7 @@ import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.EmailUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.request.PasswordUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.UserResponseDTO;
@@ -22,4 +23,7 @@ public interface UserService {
     Future<UserResponseDTO> update(JWTAuthTokenDTO jwtAuthTokenDTO, UserUpdateRequestDTO userUpdateRequestDTO);
 
     Future<OTPResponseDTO> updateEmail(JWTAuthTokenDTO jwtAuthTokenDTO, EmailUpdateRequestDTO emailUpdateRequestDTO);
+
+    Future<LoginResponseDTO> updatePassword(JWTAuthTokenDTO jwtAuthTokenDTO,
+                                            PasswordUpdateRequestDTO passwordUpdateRequestDTO);
 }

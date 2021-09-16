@@ -35,6 +35,8 @@ public class UserDaoImpl implements UserDao {
 
     public static final String UPDATE_EMAIL = "UPDATE \"user\" SET email=$1, time_last_modified=$2 WHERE id=$3";
 
+    public static final String UPDATE_PASSWORD = "UPDATE \"user\" SET password=$1, time_last_modified=$2 WHERE id=$3";
+
     @Override
     public Future<Long> signUp(SqlClient sqlClient, User user) {
         Tuple values = Tuple.of(
@@ -107,5 +109,15 @@ public class UserDaoImpl implements UserDao {
                 userId
         );
         return DbUtils.executeQuery(sqlClient, UPDATE_EMAIL, values);
+    }
+
+    @Override
+    public Future<Void> updatePassword(SqlClient sqlClient, Long userId, String password) {
+        Tuple values = Tuple.of(
+                password,
+                OffsetDateTime.now(),
+                userId
+        );
+        return DbUtils.executeQuery(sqlClient, UPDATE_PASSWORD, values);
     }
 }

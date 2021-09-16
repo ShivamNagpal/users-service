@@ -70,10 +70,9 @@ public class User extends BaseModel {
         user.setLastName(body.getString(RequestConstants.LAST_NAME));
         // TODO: Validate the email
         user.setEmail(body.getString(RequestConstants.EMAIL));
-        user.setPassword(
-                BCrypt.hashpw(body.getString(RequestConstants.PASSWORD),
-                        BCrypt.gensalt(config.getInteger(Constants.BCRYPT_PASSWORD_LOG_ROUNDS)))
-        );
+        user.setPassword(BCrypt.hashpw(body.getString(RequestConstants.PASSWORD),
+                BCrypt.gensalt(config.getInteger(Constants.BCRYPT_PASSWORD_LOG_ROUNDS))
+        ));
 
         return Future.succeededFuture(user);
     }

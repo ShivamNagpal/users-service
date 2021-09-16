@@ -18,4 +18,6 @@ public interface UserDao {
     Future<Void> update(SqlClient sqlClient, User user);
 
     Future<Void> updateEmail(SqlClient sqlClient, Long userId, String email);
+
+    Future<Void> updatePassword(SqlClient sqlClient, Long userId, String password);
 }

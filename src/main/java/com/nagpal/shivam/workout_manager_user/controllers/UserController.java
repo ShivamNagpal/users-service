@@ -4,6 +4,7 @@ import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.EmailUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.request.PasswordUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
 import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
 import com.nagpal.shivam.workout_manager_user.models.User;
@@ -44,6 +45,7 @@ public class UserController {
         getById();
         update();
         updateEmail();
+        updatePassword();
     }
 
     private void signUp() {
@@ -140,6 +142,23 @@ public class UserController {
                         )
                         .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
                         )
+                );
+    }
+
+    private void updatePassword() {
+        router.patch(RoutingConstants.PASSWORD)
+                .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                        .compose(body -> PasswordUpdateRequestDTO.fromRequest(body, config))
+                        .compose(passwordUpdateRequestDTO -> {
+                            String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
+                            JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
+                            return userService.updatePassword(jwtAuthTokenDTO, passwordUpdateRequestDTO);
+                        })
+                        .onSuccess(loginResponseDTO -> routingContext.response()
+                                .setStatusCode(HttpResponseStatus.OK.code())
+                                .end(Json.encodePrettily(ResponseWrapper.success(loginResponseDTO)))
+                        )
+                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
                 );
     }
 }
