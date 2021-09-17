@@ -10,6 +10,7 @@ import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.PasswordUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.OTPResponseDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
 import com.nagpal.shivam.workout_manager_user.dtos.response.UserResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.AccountStatus;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
@@ -74,7 +75,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Future<LoginResponseDTO> login(LoginRequestDTO loginRequestDTO) {
+    public Future<Object> login(LoginRequestDTO loginRequestDTO) {
         return pgPool.withTransaction(sqlConnection ->
                 userDao.getUserByEmail(sqlConnection, loginRequestDTO.getEmail())
                         .compose(userOptional -> {
@@ -98,14 +99,12 @@ public class UserServiceImpl implements UserService {
                                 return otpService.triggerEmailVerification(sqlConnection, user.getId(), user.getEmail(),
                                                 OTPPurpose.VERIFY_USER
                                         )
-                                        .compose(otpToken -> {
+                                        .map(otpToken -> {
                                             OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
                                             otpResponseDTO.setOtpToken(otpToken);
-                                            return Future.failedFuture(new ResponseException(
-                                                    HttpResponseStatus.OK.code(),
-                                                    MessageConstants.USER_ACCOUNT_IS_UNVERIFIED,
-                                                    otpResponseDTO
-                                            ));
+                                            return ResponseWrapper.failure(otpResponseDTO,
+                                                    MessageConstants.USER_ACCOUNT_IS_UNVERIFIED
+                                            );
                                         });
                             }
                             if (user.getAccountStatus() != AccountStatus.ACTIVE) {
@@ -121,7 +120,8 @@ public class UserServiceImpl implements UserService {
                                                 roles.stream().map(r -> r.getRoleName().name()).toArray(String[]::new);
                                         return sessionService.createNewSessionAndFormLoginResponse(mongoClient,
                                                 user.getId(), rolesArray);
-                                    });
+                                    })
+                                    .map(obj -> obj);
                         })
         );
     }
