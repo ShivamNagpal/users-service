@@ -13,15 +13,19 @@ import com.nagpal.shivam.workout_manager_user.utils.RoutingConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 public class OTPController {
     private final Router router;
+    private final JsonObject config;
     private final OTPService otpService;
     private final JWTService jwtService;
 
-    public OTPController(Vertx vertx, Router mainRouter, OTPService otpService, JWTService jwtService) {
+    public OTPController(Vertx vertx, JsonObject config, Router mainRouter, OTPService otpService,
+                         JWTService jwtService) {
         this.router = Router.router(vertx);
+        this.config = config;
         this.jwtService = jwtService;
         mainRouter.mountSubRouter(RoutingConstants.OTP, router);
         this.otpService = otpService;
@@ -68,18 +72,22 @@ public class OTPController {
                         GlobalExceptionHandler.handle(exception, routingContext.response());
                         return;
                     }
-                    RequestValidationUtils.fetchBodyAsJson(routingContext)
-                            .compose(VerifyOTPRequestDTO::fromRequest)
-                            .compose(verifyOTPRequestDTO -> jwtService.verifyAndDecodeOTPToken(otpToken)
-                                    .compose(
-                                            jWTOTPTokenDTO -> otpService.verifyOTP(jWTOTPTokenDTO, verifyOTPRequestDTO)
+                    jwtService.verifyAndDecodeOTPToken(otpToken)
+                            .compose(jWTOTPTokenDTO -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                                    .compose(body -> VerifyOTPRequestDTO.fromRequest(body, config,
+                                            jWTOTPTokenDTO.getOtpPurpose())
                                     )
+                                    .compose(verifyOTPRequestDTO -> otpService.verifyOTP(jWTOTPTokenDTO,
+                                            verifyOTPRequestDTO
+                                    ))
                             )
                             .onSuccess(obj -> routingContext.response()
                                     .setStatusCode(HttpResponseStatus.OK.code())
-                                    .end(Json.encodePrettily(ResponseWrapper.success(obj))))
+                                    .end(Json.encodePrettily(ResponseWrapper.success(obj)))
+                            )
                             .onFailure(throwable -> GlobalExceptionHandler.handle(throwable,
-                                    routingContext.response()));
+                                    routingContext.response()
+                            ));
                 });
     }
 }

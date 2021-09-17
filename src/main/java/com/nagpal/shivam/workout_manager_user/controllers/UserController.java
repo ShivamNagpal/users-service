@@ -2,7 +2,7 @@ package com.nagpal.shivam.workout_manager_user.controllers;
 
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
-import com.nagpal.shivam.workout_manager_user.dtos.request.EmailUpdateRequestDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.request.EmailRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.PasswordUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.ResponseWrapper;
@@ -46,6 +46,7 @@ public class UserController {
         update();
         updateEmail();
         updatePassword();
+        resetPassword();
     }
 
     private void signUp() {
@@ -138,11 +139,11 @@ public class UserController {
     private void updateEmail() {
         router.patch(RoutingConstants.EMAIL)
                 .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
-                        .compose(EmailUpdateRequestDTO::fromRequest)
-                        .compose(emailUpdateRequestDTO -> {
+                        .compose(EmailRequestDTO::fromRequest)
+                        .compose(emailRequestDTO -> {
                             String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
                             JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
-                            return userService.updateEmail(jwtAuthTokenDTO, emailUpdateRequestDTO);
+                            return userService.updateEmail(jwtAuthTokenDTO, emailRequestDTO);
                         })
                         .onSuccess(otpResponseDTO -> routingContext.response()
                                 .setStatusCode(HttpResponseStatus.OK.code())
@@ -167,6 +168,20 @@ public class UserController {
                                 .end(Json.encodePrettily(ResponseWrapper.success(loginResponseDTO)))
                         )
                         .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
+                );
+    }
+
+    private void resetPassword() {
+        router.post(RoutingConstants.RESET_PASSWORD)
+                .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                        .compose(EmailRequestDTO::fromRequest)
+                        .compose(userService::resetPassword)
+                        .onSuccess(otpResponseDTO -> routingContext.response()
+                                .setStatusCode(HttpResponseStatus.OK.code())
+                                .end(Json.encodePrettily(ResponseWrapper.success(otpResponseDTO)))
+                        )
+                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                        )
                 );
     }
 }

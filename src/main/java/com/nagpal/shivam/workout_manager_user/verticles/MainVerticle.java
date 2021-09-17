@@ -10,6 +10,7 @@ import com.nagpal.shivam.workout_manager_user.daos.*;
 import com.nagpal.shivam.workout_manager_user.daos.impl.*;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.exceptions.handlers.GlobalExceptionHandler;
+import com.nagpal.shivam.workout_manager_user.helpers.UserHelper;
 import com.nagpal.shivam.workout_manager_user.services.*;
 import com.nagpal.shivam.workout_manager_user.services.impl.*;
 import com.nagpal.shivam.workout_manager_user.utils.AuthenticationUtils;
@@ -93,19 +94,22 @@ public class MainVerticle extends AbstractVerticle {
         RoleDao roleDao = new RoleDaoImpl();
         SessionDao sessionDao = new SessionDaoImpl();
 
+        UserHelper userHelper = new UserHelper(userDao, sessionDao);
+
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
         SessionService sessionService = new SessionServiceImpl(pgPool, mongoClient, config, sessionDao, jwtService,
                 userDao, roleDao
         );
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
         OTPService otpService = new OTPServiceImpl(config, pgPool, mongoClient, otpDao, emailService, sessionService,
-                jwtService, userDao, roleDao);
-        UserService userService =
-                new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao, sessionDao);
+                jwtService, userHelper, userDao, roleDao);
+        UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao,
+                sessionDao, userHelper
+        );
 
         new SessionController(vertx, mainRouter, sessionService);
         new HealthController(vertx, mainRouter, healthService);
-        new OTPController(vertx, mainRouter, otpService, jwtService);
+        new OTPController(vertx, config, mainRouter, otpService, jwtService);
         new UserController(vertx, config, mainRouter, userService, jwtService);
     }
 

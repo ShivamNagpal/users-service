@@ -5,7 +5,7 @@ import com.nagpal.shivam.workout_manager_user.daos.SessionDao;
 import com.nagpal.shivam.workout_manager_user.daos.UserDao;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.UserUpdateRequestDTO;
-import com.nagpal.shivam.workout_manager_user.dtos.request.EmailUpdateRequestDTO;
+import com.nagpal.shivam.workout_manager_user.dtos.request.EmailRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.LoginRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.request.PasswordUpdateRequestDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.response.LoginResponseDTO;
@@ -15,6 +15,7 @@ import com.nagpal.shivam.workout_manager_user.dtos.response.UserResponseDTO;
 import com.nagpal.shivam.workout_manager_user.enums.AccountStatus;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
+import com.nagpal.shivam.workout_manager_user.helpers.UserHelper;
 import com.nagpal.shivam.workout_manager_user.models.Role;
 import com.nagpal.shivam.workout_manager_user.models.User;
 import com.nagpal.shivam.workout_manager_user.services.OTPService;
@@ -26,7 +27,6 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.SqlConnection;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.OffsetDateTime;
@@ -40,9 +40,11 @@ public class UserServiceImpl implements UserService {
     private final SessionService sessionService;
     private final RoleDao roleDao;
     private final SessionDao sessionDao;
+    private final UserHelper userHelper;
 
     public UserServiceImpl(PgPool pgPool, MongoClient mongoClient, UserDao userDao, OTPService otpService,
-                           SessionService sessionService, RoleDao roleDao, SessionDao sessionDao) {
+                           SessionService sessionService, RoleDao roleDao, SessionDao sessionDao,
+                           UserHelper userHelper) {
         this.pgPool = pgPool;
         this.mongoClient = mongoClient;
         this.userDao = userDao;
@@ -50,6 +52,7 @@ public class UserServiceImpl implements UserService {
         this.sessionService = sessionService;
         this.roleDao = roleDao;
         this.sessionDao = sessionDao;
+        this.userHelper = userHelper;
     }
 
     @Override
@@ -76,17 +79,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Future<Object> login(LoginRequestDTO loginRequestDTO) {
-        return pgPool.withTransaction(sqlConnection ->
-                userDao.getUserByEmail(sqlConnection, loginRequestDTO.getEmail())
-                        .compose(userOptional -> {
-                            if (userOptional.isEmpty()) {
-                                return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                                        MessageConstants.USER_NOT_FOUND,
-                                        null
-                                ));
-                            }
-                            return Future.succeededFuture(userOptional.get());
-                        })
+        return pgPool.withTransaction(sqlConnection -> userHelper.getUserByEmail(sqlConnection,
+                                loginRequestDTO.getEmail()
+                        )
                         .compose(user -> {
                             if (!BCrypt.checkpw(loginRequestDTO.getPassword(), user.getPassword())) {
                                 return Future.failedFuture(
@@ -138,7 +133,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Future<UserResponseDTO> getById(JWTAuthTokenDTO jwtAuthTokenDTO) {
         return pgPool.withTransaction(sqlConnection -> {
-            Future<User> userFuture = getUserById(sqlConnection, jwtAuthTokenDTO.getUserId());
+            Future<User> userFuture = userHelper.getUserById(sqlConnection, jwtAuthTokenDTO.getUserId());
             Future<List<Role>> rolesFuture =
                     roleDao.fetchRolesByUserIdAndDeleted(sqlConnection, jwtAuthTokenDTO.getUserId(), false);
             return CompositeFuture.all(userFuture, rolesFuture)
@@ -152,7 +147,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Future<UserResponseDTO> update(JWTAuthTokenDTO jwtAuthTokenDTO, UserUpdateRequestDTO userUpdateRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> getUserById(sqlConnection, jwtAuthTokenDTO.getUserId())
+        return pgPool.withTransaction(sqlConnection -> userHelper.getUserById(sqlConnection,
+                        jwtAuthTokenDTO.getUserId()
+                )
                 .compose(user -> {
                     user.setFirstName(userUpdateRequestDTO.getFirstName());
                     user.setLastName(userUpdateRequestDTO.getLastName());
@@ -163,16 +160,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Future<OTPResponseDTO> updateEmail(JWTAuthTokenDTO jwtAuthTokenDTO,
-                                              EmailUpdateRequestDTO emailUpdateRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> getUserById(sqlConnection, jwtAuthTokenDTO.getUserId())
+                                              EmailRequestDTO emailRequestDTO) {
+        return pgPool.withTransaction(sqlConnection -> userHelper.getUserById(sqlConnection,
+                        jwtAuthTokenDTO.getUserId()
+                )
                 .compose(user -> {
-                    if (user.getEmail().equals(emailUpdateRequestDTO.getEmail())) {
+                    if (user.getEmail().equals(emailRequestDTO.getEmail())) {
                         return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
                                 MessageConstants.NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL, null
                         ));
                     }
                     return otpService.triggerEmailVerification(sqlConnection, jwtAuthTokenDTO.getUserId(),
-                                    emailUpdateRequestDTO.getEmail(), OTPPurpose.UPDATE_EMAIL
+                                    emailRequestDTO.getEmail(), OTPPurpose.UPDATE_EMAIL
                             )
                             .map(otpToken -> {
                                 OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
@@ -185,34 +184,31 @@ public class UserServiceImpl implements UserService {
     @Override
     public Future<LoginResponseDTO> updatePassword(JWTAuthTokenDTO jwtAuthTokenDTO,
                                                    PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> getUserById(sqlConnection, jwtAuthTokenDTO.getUserId())
-                .compose(user -> {
-                    if (BCrypt.checkpw(passwordUpdateRequestDTO.getPlainPassword(), user.getPassword())) {
-                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                MessageConstants.NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD, null
-                        ));
-                    }
-                    return userDao.updatePassword(sqlConnection, jwtAuthTokenDTO.getUserId(),
-                                    passwordUpdateRequestDTO.getHashedPassword()
-                            )
-                            .compose(v -> sessionDao.logoutAllSessions(mongoClient, jwtAuthTokenDTO.getUserId()))
-                            .compose(v -> sessionService.createNewSessionAndFormLoginResponse(mongoClient,
-                                    jwtAuthTokenDTO.getUserId(), jwtAuthTokenDTO.getRoles())
-                            );
-                })
+        return pgPool.withTransaction(sqlConnection ->
+                userHelper.updatePasswordAndLogOutAllSessions(sqlConnection, mongoClient, jwtAuthTokenDTO.getUserId(),
+                                passwordUpdateRequestDTO
+                        )
+                        .compose(v -> sessionService.createNewSessionAndFormLoginResponse(mongoClient,
+                                jwtAuthTokenDTO.getUserId(), jwtAuthTokenDTO.getRoles())
+                        )
         );
     }
 
-    private Future<User> getUserById(SqlConnection sqlConnection, Long userId) {
-        return userDao.getById(sqlConnection, userId)
-                .compose(userOptional -> {
-                    if (userOptional.isEmpty()) {
-                        return Future.failedFuture(
-                                new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                                        MessageConstants.USER_NOT_FOUND, null)
-                        );
-                    }
-                    return Future.succeededFuture(userOptional.get());
-                });
+
+    @Override
+    public Future<OTPResponseDTO> resetPassword(EmailRequestDTO emailRequestDTO) {
+        return pgPool.withTransaction(sqlConnection -> userHelper.getUserByEmail(sqlConnection,
+                                emailRequestDTO.getEmail()
+                        )
+                        .compose(user -> otpService.triggerEmailVerification(sqlConnection, user.getId(), user.getEmail(),
+                                                OTPPurpose.RESET_PASSWORD
+                                        )
+                                        .map(otpToken -> {
+                                            OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
+                                            otpResponseDTO.setOtpToken(otpToken);
+                                            return otpResponseDTO;
+                                        })
+                        )
+        );
     }
 }

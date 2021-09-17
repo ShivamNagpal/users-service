@@ -19,12 +19,14 @@ public class RoutingConstants {
     public static final String ME = "/me";
     public static final String EMAIL = "/email";
     public static final String PASSWORD = "/password";
+    public static final String RESET_PASSWORD = PASSWORD + "/reset";
 
     public static final Set<String> PUBLIC_ROUTES = Set.of(
             HEALTH,
             HEALTH + DB,
             USER + SIGN_UP,
             USER + LOGIN,
+            USER + RESET_PASSWORD,
             OTP + RESEND_OTP,
             OTP + VERIFY_OTP,
             SESSION + REFRESH_TOKEN

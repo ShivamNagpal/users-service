@@ -10,6 +10,7 @@ import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
 import com.nagpal.shivam.workout_manager_user.enums.OTPStatus;
 import com.nagpal.shivam.workout_manager_user.enums.RoleName;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
+import com.nagpal.shivam.workout_manager_user.helpers.UserHelper;
 import com.nagpal.shivam.workout_manager_user.models.OTP;
 import com.nagpal.shivam.workout_manager_user.services.EmailService;
 import com.nagpal.shivam.workout_manager_user.services.JWTService;
@@ -38,13 +39,14 @@ public class OTPServiceImpl implements OTPService {
     private final EmailService emailService;
     private final SessionService sessionService;
     private final JWTService jwtService;
+    private final UserHelper userHelper;
     private final UserDao userDao;
     private final RoleDao roleDao;
     private final Random random;
 
     public OTPServiceImpl(JsonObject config, PgPool pgPool, MongoClient mongoClient, OTPDao otpDao,
                           EmailService emailService, SessionService sessionService, JWTService jwtService,
-                          UserDao userDao, RoleDao roleDao) {
+                          UserHelper userHelper, UserDao userDao, RoleDao roleDao) {
         this.config = config;
         this.pgPool = pgPool;
         this.mongoClient = mongoClient;
@@ -52,6 +54,7 @@ public class OTPServiceImpl implements OTPService {
         this.emailService = emailService;
         this.sessionService = sessionService;
         this.jwtService = jwtService;
+        this.userHelper = userHelper;
         this.userDao = userDao;
         this.roleDao = roleDao;
         this.random = new SecureRandom();
@@ -107,6 +110,13 @@ public class OTPServiceImpl implements OTPService {
                                 case UPDATE_EMAIL:
                                     actionPostOTPVerification = userDao.updateEmail(sqlConnection,
                                                     jwtotpTokenDTO.getUserId(), jwtotpTokenDTO.getEmail()
+                                            )
+                                            .compose(v2 -> Future.succeededFuture());
+                                    break;
+                                case RESET_PASSWORD:
+                                    actionPostOTPVerification = userHelper.resetPasswordAndLogOutAllSessions(
+                                                    sqlConnection, mongoClient,
+                                                    jwtotpTokenDTO.getUserId(), verifyOTPRequestDTO
                                             )
                                             .compose(v2 -> Future.succeededFuture());
                                     break;
