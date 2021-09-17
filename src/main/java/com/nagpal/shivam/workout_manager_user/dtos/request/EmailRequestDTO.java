@@ -13,10 +13,10 @@ import java.util.HashMap;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EmailUpdateRequestDTO {
+public class EmailRequestDTO {
     private String email;
 
-    public static Future<EmailUpdateRequestDTO> fromRequest(JsonObject body) {
+    public static Future<EmailRequestDTO> fromRequest(JsonObject body) {
         HashMap<String, String> errors = new HashMap<>();
 
         RequestValidationUtils.validateNotBlank(body, RequestConstants.EMAIL, errors);
@@ -25,9 +25,9 @@ public class EmailUpdateRequestDTO {
             return RequestValidationUtils.formErrorResponse(errors);
         }
 
-        EmailUpdateRequestDTO emailUpdateRequestDTO = new EmailUpdateRequestDTO();
-        emailUpdateRequestDTO.setEmail(body.getString(RequestConstants.EMAIL));
+        EmailRequestDTO emailRequestDTO = new EmailRequestDTO();
+        emailRequestDTO.setEmail(body.getString(RequestConstants.EMAIL));
 
-        return Future.succeededFuture(emailUpdateRequestDTO);
+        return Future.succeededFuture(emailRequestDTO);
     }
 }
