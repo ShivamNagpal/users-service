@@ -16,7 +16,7 @@ import java.util.Optional;
 public class OTPDaoImpl implements OTPDao {
 
     public static final String SELECT_TRIGGERED_OTP =
-            "SELECT * FROM otp where user_id=$1 and email=$2 and valid_after > $3";
+            "SELECT * FROM otp where user_id=$1 and email=$2 and valid_after > $3 and otp_status != $4";
     public static final String SELECT_ACTIVE_OTP =
             "SELECT * FROM otp where user_id=$1 and email=$2 and valid_after > $3 and valid_after <= $4 and " +
                     "otp_status = $5";
@@ -37,7 +37,7 @@ public class OTPDaoImpl implements OTPDao {
     @Override
     public Future<Optional<OTP>> fetchAlreadyTriggeredOTP(SqlClient sqlClient, Long userId, String email) {
         OffsetDateTime lastActiveTime = OffsetDateTime.now().minusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME));
-        Tuple values = Tuple.of(userId, email, lastActiveTime);
+        Tuple values = Tuple.of(userId, email, lastActiveTime, OTPStatus.USED);
         return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_TRIGGERED_OTP, values, OTP::fromRow);
     }
 
