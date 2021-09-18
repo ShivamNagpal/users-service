@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
                                                 null
                                         ));
                             }
-                            if (user.getEmailVerified() != null && !user.getEmailVerified()) {
+                            if (user.getEmailVerified() == null || !user.getEmailVerified()) {
                                 return otpService.triggerEmailVerification(sqlConnection, user.getId(), user.getEmail(),
                                                 OTPPurpose.VERIFY_USER
                                         )
@@ -184,16 +184,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public Future<LoginResponseDTO> updatePassword(JWTAuthTokenDTO jwtAuthTokenDTO,
                                                    PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
-        return pgPool.withTransaction(sqlConnection ->
-                userHelper.updatePasswordAndLogOutAllSessions(sqlConnection, mongoClient, jwtAuthTokenDTO.getUserId(),
-                                passwordUpdateRequestDTO
+        return pgPool.withTransaction(sqlConnection -> userHelper.updatePasswordAndLogOutAllSessions(sqlConnection,
+                                mongoClient, jwtAuthTokenDTO.getUserId(), passwordUpdateRequestDTO
                         )
                         .compose(v -> sessionService.createNewSessionAndFormLoginResponse(mongoClient,
-                                jwtAuthTokenDTO.getUserId(), jwtAuthTokenDTO.getRoles())
-                        )
+                                jwtAuthTokenDTO.getUserId(), jwtAuthTokenDTO.getRoles()
+                        ))
         );
     }
-
 
     @Override
     public Future<OTPResponseDTO> resetPassword(EmailRequestDTO emailRequestDTO) {

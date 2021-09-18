@@ -52,25 +52,20 @@ public class UserHelper {
                                                            Long userId,
                                                            PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
         return getUserById(sqlConnection, userId)
-                .compose(user -> {
-                    if (BCrypt.checkpw(passwordUpdateRequestDTO.getPlainPassword(), user.getPassword())) {
-                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                MessageConstants.NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD, null
-                        ));
-                    }
-                    return userDao.updatePassword(sqlConnection, userId, passwordUpdateRequestDTO.getHashedPassword())
-                            .compose(v -> sessionDao.logoutAllSessions(mongoClient, userId));
-                });
+                .compose(user -> updatePasswordAndLogOutAllSessions(sqlConnection, mongoClient, user,
+                        passwordUpdateRequestDTO
+                ));
     }
 
-    public Future<Void> resetPasswordAndLogOutAllSessions(SqlConnection sqlConnection, MongoClient mongoClient,
-                                                          Long userId,
-                                                          PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
-        return getUserById(sqlConnection, userId)
-                .compose(user -> userDao.updatePassword(sqlConnection, userId,
-                                        passwordUpdateRequestDTO.getHashedPassword()
-                                )
-                                .compose(v -> sessionDao.logoutAllSessions(mongoClient, userId))
-                );
+    public Future<Void> updatePasswordAndLogOutAllSessions(SqlConnection sqlConnection, MongoClient mongoClient,
+                                                           User user,
+                                                           PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
+        if (BCrypt.checkpw(passwordUpdateRequestDTO.getPlainPassword(), user.getPassword())) {
+            return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                    MessageConstants.NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD, null
+            ));
+        }
+        return userDao.updatePassword(sqlConnection, user.getId(), passwordUpdateRequestDTO.getHashedPassword())
+                .compose(v -> sessionDao.logoutAllSessions(mongoClient, user.getId()));
     }
 }

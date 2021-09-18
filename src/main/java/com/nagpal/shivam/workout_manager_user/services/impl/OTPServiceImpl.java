@@ -114,10 +114,20 @@ public class OTPServiceImpl implements OTPService {
                                             .compose(v2 -> Future.succeededFuture());
                                     break;
                                 case RESET_PASSWORD:
-                                    actionPostOTPVerification = userHelper.resetPasswordAndLogOutAllSessions(
-                                                    sqlConnection, mongoClient,
-                                                    jwtotpTokenDTO.getUserId(), verifyOTPRequestDTO
-                                            )
+                                    actionPostOTPVerification = userHelper.getUserById(sqlConnection,
+                                                    jwtotpTokenDTO.getUserId())
+                                            .compose(user -> {
+                                                Future<Void> future =
+                                                        userHelper.updatePasswordAndLogOutAllSessions(sqlConnection,
+                                                                mongoClient, user, verifyOTPRequestDTO
+                                                        );
+                                                if (user.getEmailVerified() == null || !user.getEmailVerified()) {
+                                                    future = future.compose(v2 -> userDao.activateUser(sqlConnection,
+                                                            user.getId()
+                                                    ));
+                                                }
+                                                return future;
+                                            })
                                             .compose(v2 -> Future.succeededFuture());
                                     break;
                                 default:
