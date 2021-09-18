@@ -73,10 +73,8 @@ public class OTPServiceImpl implements OTPService {
 
     @Override
     public Future<Object> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO, VerifyOTPRequestDTO verifyOTPRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> otpDao.fetchActiveOTP(
-                                sqlConnection,
-                                jwtotpTokenDTO.getUserId(),
-                                jwtotpTokenDTO.getEmail()
+        return pgPool.withTransaction(sqlConnection -> otpDao.fetchActiveOTP(sqlConnection, jwtotpTokenDTO.getUserId(),
+                                jwtotpTokenDTO.getEmail(), jwtotpTokenDTO.getOtpPurpose()
                         )
                         .compose(otpOptional -> {
                             if (otpOptional.isEmpty()) {
@@ -146,7 +144,7 @@ public class OTPServiceImpl implements OTPService {
     @Override
     public Future<String> triggerEmailVerification(SqlClient sqlClient, Long userId, String email,
                                                    OTPPurpose otpPurpose) {
-        return otpDao.fetchAlreadyTriggeredOTP(sqlClient, userId, email)
+        return otpDao.fetchAlreadyTriggeredOTP(sqlClient, userId, email, otpPurpose)
                 .compose(otpOptional -> {
                     int otpValue = generateOTP();
                     String otpHash = hashOTP(otpValue);
