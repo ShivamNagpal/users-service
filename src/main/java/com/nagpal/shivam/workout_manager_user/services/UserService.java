@@ -28,4 +28,6 @@ public interface UserService {
                                             PasswordUpdateRequestDTO passwordUpdateRequestDTO);
 
     Future<OTPResponseDTO> resetPassword(EmailRequestDTO emailRequestDTO);
+
+    Future<Void> deactivate(JWTAuthTokenDTO jwtAuthTokenDTO);
 }
