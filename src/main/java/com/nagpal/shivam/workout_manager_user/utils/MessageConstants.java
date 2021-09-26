@@ -41,6 +41,8 @@ public class MessageConstants {
     public static final String NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL = "New email cannot be same as the old email";
     public static final String NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD =
             "New password cannot be same as the old password";
+    public static final String USER_ACCOUNT_WASN_T_DEACTIVATED_OR_MARKED_FOR_DELETION =
+            "User account wasn't deactivated or marked for deletion";
 
     private MessageConstants() {
     }

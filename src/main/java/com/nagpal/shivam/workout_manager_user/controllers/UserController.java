@@ -48,6 +48,7 @@ public class UserController {
         updatePassword();
         resetPassword();
         deactivate();
+        reactivate();
     }
 
     private void signUp() {
@@ -187,7 +188,7 @@ public class UserController {
     }
 
     private void deactivate() {
-        router.post("/deactivate")
+        router.post(RoutingConstants.DEACTIVATE)
                 .handler(routingContext -> {
                     String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
                     JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
@@ -199,5 +200,18 @@ public class UserController {
                             .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
                             );
                 });
+    }
+
+    private void reactivate() {
+        router.post(RoutingConstants.REACTIVATE)
+                .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                        .compose(LoginRequestDTO::fromRequest)
+                        .compose(userService::reactivate)
+                        .onSuccess(obj -> routingContext.response()
+                                .setStatusCode(HttpResponseStatus.OK.code())
+                                .end(Json.encodePrettily(ResponseWrapper.success(obj)))
+                        )
+                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
+                );
     }
 }

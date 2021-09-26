@@ -220,4 +220,29 @@ public class UserServiceImpl implements UserService {
                         )
         );
     }
+
+    @Override
+    public Future<Void> reactivate(LoginRequestDTO loginRequestDTO) {
+        return pgPool.withTransaction(
+                sqlConnection -> userHelper.getUserByEmail(sqlConnection, loginRequestDTO.getEmail())
+                        .compose(user -> {
+                            if (!BCrypt.checkpw(loginRequestDTO.getPassword(), user.getPassword())) {
+                                return Future.failedFuture(
+                                        new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                                MessageConstants.INVALID_CREDENTIALS,
+                                                null
+                                        ));
+                            }
+                            if (user.getAccountStatus() != AccountStatus.DEACTIVATED &&
+                                    user.getAccountStatus() != AccountStatus.SCHEDULED_FOR_DELETION) {
+                                return Future.failedFuture(
+                                        new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                                MessageConstants.USER_ACCOUNT_WASN_T_DEACTIVATED_OR_MARKED_FOR_DELETION,
+                                                null
+                                        ));
+                            }
+                            return userDao.updateStatus(sqlConnection, user.getId(), AccountStatus.ACTIVE);
+                        })
+        );
+    }
 }

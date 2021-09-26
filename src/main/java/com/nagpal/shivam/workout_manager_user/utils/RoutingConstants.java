@@ -19,6 +19,8 @@ public class RoutingConstants {
     public static final String ME = "/me";
     public static final String EMAIL = "/email";
     public static final String PASSWORD = "/password";
+    public static final String DEACTIVATE = "/deactivate";
+    public static final String REACTIVATE = "/reactivate";
     public static final String RESET_PASSWORD = PASSWORD + "/reset";
 
     public static final Set<String> PUBLIC_ROUTES = Set.of(
@@ -27,6 +29,7 @@ public class RoutingConstants {
             USER + SIGN_UP,
             USER + LOGIN,
             USER + RESET_PASSWORD,
+            USER + REACTIVATE,
             OTP + RESEND_OTP,
             OTP + VERIFY_OTP,
             SESSION + REFRESH_TOKEN

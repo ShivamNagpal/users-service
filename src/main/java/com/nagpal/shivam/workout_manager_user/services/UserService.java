@@ -30,4 +30,6 @@ public interface UserService {
     Future<OTPResponseDTO> resetPassword(EmailRequestDTO emailRequestDTO);
 
     Future<Void> deactivate(JWTAuthTokenDTO jwtAuthTokenDTO);
+
+    Future<Void> reactivate(LoginRequestDTO loginRequestDTO);
 }
