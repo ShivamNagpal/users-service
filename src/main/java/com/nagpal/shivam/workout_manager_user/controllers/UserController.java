@@ -49,6 +49,7 @@ public class UserController {
         resetPassword();
         deactivate();
         reactivate();
+        scheduleForDeletion();
     }
 
     private void signUp() {
@@ -213,5 +214,20 @@ public class UserController {
                         )
                         .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
                 );
+    }
+
+    private void scheduleForDeletion() {
+        router.delete(RoutingConstants.ME)
+                .handler(routingContext -> {
+                    String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
+                    JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
+                    userService.scheduleForDeletion(jwtAuthTokenDTO)
+                            .onSuccess(obj -> routingContext.response()
+                                    .setStatusCode(HttpResponseStatus.OK.code())
+                                    .end(Json.encodePrettily(ResponseWrapper.success(obj)))
+                            )
+                            .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                            );
+                });
     }
 }

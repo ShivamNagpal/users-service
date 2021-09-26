@@ -245,4 +245,15 @@ public class UserServiceImpl implements UserService {
                         })
         );
     }
+
+    @Override
+    public Future<Void> scheduleForDeletion(JWTAuthTokenDTO jwtAuthTokenDTO) {
+        return pgPool.withTransaction(sqlConnection -> sessionDao.logoutAllSessions(mongoClient,
+                                jwtAuthTokenDTO.getUserId()
+                        )
+                        .compose(v -> userDao.updateStatus(sqlConnection, jwtAuthTokenDTO.getUserId(),
+                                AccountStatus.SCHEDULED_FOR_DELETION)
+                        )
+        );
+    }
 }

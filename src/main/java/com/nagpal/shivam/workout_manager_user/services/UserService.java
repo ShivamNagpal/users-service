@@ -32,4 +32,6 @@ public interface UserService {
     Future<Void> deactivate(JWTAuthTokenDTO jwtAuthTokenDTO);
 
     Future<Void> reactivate(LoginRequestDTO loginRequestDTO);
+
+    Future<Void> scheduleForDeletion(JWTAuthTokenDTO jwtAuthTokenDTO);
 }
