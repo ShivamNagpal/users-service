@@ -2,10 +2,7 @@ package com.nagpal.shivam.workout_manager_user.verticles;
 
 import com.nagpal.shivam.workout_manager_user.configurations.DatabaseConfiguration;
 import com.nagpal.shivam.workout_manager_user.configurations.EmailConfiguration;
-import com.nagpal.shivam.workout_manager_user.controllers.HealthController;
-import com.nagpal.shivam.workout_manager_user.controllers.OTPController;
-import com.nagpal.shivam.workout_manager_user.controllers.SessionController;
-import com.nagpal.shivam.workout_manager_user.controllers.UserController;
+import com.nagpal.shivam.workout_manager_user.controllers.*;
 import com.nagpal.shivam.workout_manager_user.daos.*;
 import com.nagpal.shivam.workout_manager_user.daos.impl.*;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
@@ -106,11 +103,13 @@ public class MainVerticle extends AbstractVerticle {
         UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao,
                 sessionDao, userHelper
         );
+        RoleService roleService = new RoleServiceImpl(pgPool, roleDao, userHelper);
 
         new SessionController(vertx, mainRouter, sessionService);
         new HealthController(vertx, mainRouter, healthService);
         new OTPController(vertx, config, mainRouter, otpService, jwtService);
         new UserController(vertx, config, mainRouter, userService, jwtService);
+        new RoleController(vertx, mainRouter, roleService, jwtService);
     }
 
     private void setupFilters(JWTService jwtService) {

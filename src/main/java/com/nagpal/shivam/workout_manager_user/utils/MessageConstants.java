@@ -43,6 +43,8 @@ public class MessageConstants {
             "New password cannot be same as the old password";
     public static final String USER_ACCOUNT_WASN_T_DEACTIVATED_OR_MARKED_FOR_DELETION =
             "User account wasn't deactivated or marked for deletion";
+    public static final String USER_IS_NOT_AUTHORIZED_TO_ACCESS = "User is not authorized to access";
+    public static final String USER_IS_ALREADY_A_MANAGER = "User is already a manager";
 
     private MessageConstants() {
     }

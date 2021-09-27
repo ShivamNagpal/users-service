@@ -19,12 +19,18 @@ public class RoleDaoImpl implements RoleDao {
     public static final String SELECT_ROLES_BY_USER_ID_AND_DELETED = "SELECT * FROM \"role\" WHERE user_id=$1 and " +
             "deleted=$2";
 
+    public static final String SELECT_ROLES_BY_USER_ID_AND_ROLE_NAME = "SELECT * FROM \"role\" WHERE user_id=$1 and " +
+            "role=$2";
+
+    public static final String UPDATE_ROLE_DELETED_STATUS = "UPDATE \"role\" SET deleted=$1, time_last_modified=$2 " +
+            "WHERE id=$3";
+
     @Override
-    public Future<Long> insertUserRole(SqlClient sqlClient, Long userId) {
+    public Future<Long> insertRole(SqlClient sqlClient, Long userId, RoleName roleName) {
         OffsetDateTime currentTime = OffsetDateTime.now();
         Tuple values = Tuple.of(
                 userId,
-                RoleName.USER,
+                roleName,
                 false,
                 currentTime,
                 currentTime
@@ -38,5 +44,19 @@ public class RoleDaoImpl implements RoleDao {
         Tuple values = Tuple.of(userId, deleted);
         return DbUtils.executeQueryAndReturnMany(sqlClient, SELECT_ROLES_BY_USER_ID_AND_DELETED, values,
                 Role::fromRows);
+    }
+
+    @Override
+    public Future<Optional<Role>> fetchRoleByUserIdAndRoleName(SqlClient sqlClient, Long userId, RoleName roleName) {
+        Tuple values = Tuple.of(userId, roleName);
+        return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_ROLES_BY_USER_ID_AND_ROLE_NAME, values,
+                Role::fromRow
+        );
+    }
+
+    @Override
+    public Future<Void> updateRoleDeletedStatus(SqlClient sqlClient, Long id, boolean deleted) {
+        Tuple values = Tuple.of(deleted, OffsetDateTime.now(), id);
+        return DbUtils.executeQuery(sqlClient, UPDATE_ROLE_DELETED_STATUS, values);
     }
 }

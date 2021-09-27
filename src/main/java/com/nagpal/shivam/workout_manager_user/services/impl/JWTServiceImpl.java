@@ -9,6 +9,7 @@ import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTAuthTokenDTO;
 import com.nagpal.shivam.workout_manager_user.dtos.internal.JWTOTPTokenDTO;
 import com.nagpal.shivam.workout_manager_user.enums.Configuration;
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
+import com.nagpal.shivam.workout_manager_user.enums.RoleName;
 import com.nagpal.shivam.workout_manager_user.exceptions.ResponseException;
 import com.nagpal.shivam.workout_manager_user.services.JWTService;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
@@ -27,6 +28,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Set;
 
 public class JWTServiceImpl implements JWTService {
 
@@ -124,5 +126,18 @@ public class JWTServiceImpl implements JWTService {
         jwtAuthTokenDTO.setSessionId(decodedJWT.getClaim(Constants.SESSION_ID).asString());
         jwtAuthTokenDTO.setRoles(decodedJWT.getClaim(Constants.ROLES).asArray(String.class));
         return jwtAuthTokenDTO;
+    }
+
+    @Override
+    public Future<Void> verifyRoles(JWTAuthTokenDTO jwtAuthTokenDTO, RoleName... roles) {
+        Set<String> userRoles = Set.of(jwtAuthTokenDTO.getRoles());
+        for (RoleName roleName : roles) {
+            if (userRoles.contains(roleName.name())) {
+                return Future.succeededFuture();
+            }
+        }
+        return Future.failedFuture(new ResponseException(HttpResponseStatus.UNAUTHORIZED.code(),
+                MessageConstants.USER_IS_NOT_AUTHORIZED_TO_ACCESS, null
+        ));
     }
 }

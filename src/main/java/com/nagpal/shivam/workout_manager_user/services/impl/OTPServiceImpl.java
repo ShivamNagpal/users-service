@@ -99,7 +99,9 @@ public class OTPServiceImpl implements OTPService {
                                                     sqlConnection,
                                                     jwtotpTokenDTO.getUserId()
                                             )
-                                            .compose(v2 -> roleDao.insertUserRole(sqlConnection, jwtotpTokenDTO.getUserId()))
+                                            .compose(v2 -> roleDao.insertRole(sqlConnection, jwtotpTokenDTO.getUserId(),
+                                                    RoleName.USER)
+                                            )
                                             .compose(id -> sessionService.createNewSessionAndFormLoginResponse(mongoClient,
                                                     jwtotpTokenDTO.getUserId(), new String[]{RoleName.USER.name()}
                                             ))
