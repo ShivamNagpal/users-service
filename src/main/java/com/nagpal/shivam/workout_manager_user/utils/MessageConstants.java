@@ -45,6 +45,7 @@ public class MessageConstants {
             "User account wasn't deactivated or marked for deletion";
     public static final String USER_IS_NOT_AUTHORIZED_TO_ACCESS = "User is not authorized to access";
     public static final String USER_IS_ALREADY_A_MANAGER = "User is already a manager";
+    public static final String USER_IS_NOT_A_MANAGER = "User is not a Manager";
 
     private MessageConstants() {
     }

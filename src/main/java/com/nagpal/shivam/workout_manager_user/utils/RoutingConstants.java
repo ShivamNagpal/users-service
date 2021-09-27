@@ -23,6 +23,7 @@ public class RoutingConstants {
     public static final String REACTIVATE = "/reactivate";
     public static final String ROLE = "/role";
     public static final String ASSIGN_MANAGER = "/assign-manager";
+    public static final String UN_ASSIGN_MANAGER = "/unassign-manager";
     public static final String RESET_PASSWORD = PASSWORD + "/reset";
 
     public static final Set<String> PUBLIC_ROUTES = Set.of(

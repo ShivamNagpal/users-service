@@ -32,6 +32,7 @@ public class RoleController {
 
     private void setupEndpoints() {
         assignManagerRole();
+        unAssignMangerRole();
     }
 
     private void assignManagerRole() {
@@ -43,6 +44,26 @@ public class RoleController {
                             .compose(v -> RequestValidationUtils.fetchBodyAsJson(routingContext))
                             .compose(RoleUpdateRequestDTO::fromRequest)
                             .compose(roleUpdateRequestDTO -> roleService.assignManagerRole(
+                                    roleUpdateRequestDTO.getUserId())
+                            )
+                            .onSuccess(obj -> routingContext.response()
+                                    .setStatusCode(HttpResponseStatus.OK.code())
+                                    .end(Json.encodePrettily(ResponseWrapper.success(obj)))
+                            )
+                            .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                            );
+                });
+    }
+
+    private void unAssignMangerRole() {
+        router.post(RoutingConstants.UN_ASSIGN_MANAGER)
+                .handler(routingContext -> {
+                    String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
+                    JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
+                    jwtService.verifyRoles(jwtAuthTokenDTO, RoleName.ADMIN)
+                            .compose(v -> RequestValidationUtils.fetchBodyAsJson(routingContext))
+                            .compose(RoleUpdateRequestDTO::fromRequest)
+                            .compose(roleUpdateRequestDTO -> roleService.unAssignManagerRole(
                                     roleUpdateRequestDTO.getUserId())
                             )
                             .onSuccess(obj -> routingContext.response()

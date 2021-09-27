@@ -27,18 +27,38 @@ public class RoleServiceImpl implements RoleService {
         return pgPool.withTransaction(sqlConnection -> userHelper.getUserById(sqlConnection, userId)
                 .compose(user -> roleDao.fetchRoleByUserIdAndRoleName(sqlConnection, userId, RoleName.MANAGER))
                 .compose(roleOptional -> {
-                    if (roleOptional.isPresent()) {
-                        Role role = roleOptional.get();
-                        if (role.getDeleted() != null && !role.getDeleted()) {
-                            return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                                    MessageConstants.USER_IS_ALREADY_A_MANAGER, null
-                            ));
-                        }
-                        return roleDao.updateRoleDeletedStatus(sqlConnection, role.getId(), false);
-                    } else {
+                    if (roleOptional.isEmpty()) {
                         return roleDao.insertRole(sqlConnection, userId, RoleName.MANAGER)
                                 .compose(id -> Future.succeededFuture());
                     }
+                    Role role = roleOptional.get();
+                    if (role.getDeleted() != null && !role.getDeleted()) {
+                        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
+                                MessageConstants.USER_IS_ALREADY_A_MANAGER, null
+                        ));
+                    }
+                    return roleDao.updateRoleDeletedStatus(sqlConnection, role.getId(), false);
+                })
+        );
+    }
+
+    @Override
+    public Future<Void> unAssignManagerRole(Long userId) {
+        return pgPool.withTransaction(sqlConnection -> userHelper.getUserById(sqlConnection, userId)
+                .compose(user -> roleDao.fetchRoleByUserIdAndRoleName(sqlConnection, userId, RoleName.MANAGER))
+                .compose(roleOptional -> {
+                    if (roleOptional.isEmpty()) {
+                        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
+                                MessageConstants.USER_IS_NOT_A_MANAGER, null
+                        ));
+                    }
+                    Role role = roleOptional.get();
+                    if (role.getDeleted() != null && role.getDeleted()) {
+                        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
+                                MessageConstants.USER_IS_NOT_A_MANAGER, null
+                        ));
+                    }
+                    return roleDao.updateRoleDeletedStatus(sqlConnection, role.getId(), true);
                 })
         );
     }
