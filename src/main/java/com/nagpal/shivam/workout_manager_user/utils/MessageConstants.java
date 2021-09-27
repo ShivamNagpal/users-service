@@ -46,6 +46,8 @@ public class MessageConstants {
     public static final String USER_IS_NOT_AUTHORIZED_TO_ACCESS = "User is not authorized to access";
     public static final String USER_IS_ALREADY_A_MANAGER = "User is already a manager";
     public static final String USER_IS_NOT_A_MANAGER = "User is not a Manager";
+    public static final String DELETION_CRON_FAILED = "Deletion Cron failed";
+    public static final String DELETION_CRON_EXECUTED_SUCCESSFULLY = "Deletion Cron executed successfully";
 
     private MessageConstants() {
     }

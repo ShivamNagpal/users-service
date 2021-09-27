@@ -86,12 +86,12 @@ public class MainVerticle extends AbstractVerticle {
         setupFilters(jwtService);
 
         HealthDao healthDao = new HealthDaoImpl();
-        UserDao userDao = new UserDaoImpl();
+        UserDao userDao = new UserDaoImpl(config);
         OTPDao otpDao = new OTPDaoImpl(config);
         RoleDao roleDao = new RoleDaoImpl();
         SessionDao sessionDao = new SessionDaoImpl();
 
-        UserHelper userHelper = new UserHelper(userDao, sessionDao);
+        UserHelper userHelper = new UserHelper(config, userDao, sessionDao);
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
         SessionService sessionService = new SessionServiceImpl(pgPool, mongoClient, config, sessionDao, jwtService,

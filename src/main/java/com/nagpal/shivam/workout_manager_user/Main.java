@@ -5,6 +5,7 @@ import com.nagpal.shivam.workout_manager_user.exceptions.AppException;
 import com.nagpal.shivam.workout_manager_user.utils.ConfigurationUtils;
 import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import com.nagpal.shivam.workout_manager_user.utils.MessageConstants;
+import com.nagpal.shivam.workout_manager_user.utils.PeriodicTasksUtil;
 import com.nagpal.shivam.workout_manager_user.verticles.MainVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -36,8 +37,8 @@ public class Main {
                                 promise.complete();
                             })
                             .compose(o -> DatabaseConfiguration.verifyMongoIndices(vertx, config))
-                            .compose(result -> MainVerticle.deploy(vertx, config)
-                            );
+                            .compose(result -> MainVerticle.deploy(vertx, config))
+                            .compose(result -> PeriodicTasksUtil.setupPeriodicTasks(vertx, config));
                 })
                 .onSuccess(result -> logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_DEPLOYED_THE_VERTICLES))
                 .onFailure(throwable -> {
@@ -54,4 +55,5 @@ public class Main {
             }
         });
     }
+
 }

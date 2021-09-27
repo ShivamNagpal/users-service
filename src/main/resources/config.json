@@ -7,5 +7,8 @@
   "bcrypt.password.log.rounds": 10,
   "bcrypt.otp.log.rounds": 4,
   "jwt.expiry.time": 600,
-  "session.expiry.time": 864000
+  "session.expiry.time": 864000,
+  "deletion.cron.delay": 28800000,
+  "deletion.cron.select.period.in.days": 30,
+  "deletion.cron.batch.size": 100
 }

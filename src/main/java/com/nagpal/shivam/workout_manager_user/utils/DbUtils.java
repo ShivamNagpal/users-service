@@ -40,6 +40,12 @@ public class DbUtils {
                 .map(mapper);
     }
 
+    public static Future<Void> executeBatch(SqlClient sqlClient, String query, List<Tuple> tuples) {
+        return sqlClient.preparedQuery(query)
+                .executeBatch(tuples)
+                .compose(rowSet -> Future.succeededFuture());
+    }
+
     public static Future<Void> sqlClientHealthCheck(SqlClient sqlClient) {
         return executeQuery(sqlClient, Constants.SELECT_1, Tuple.tuple());
     }

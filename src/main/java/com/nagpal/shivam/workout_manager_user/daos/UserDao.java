@@ -5,6 +5,7 @@ import com.nagpal.shivam.workout_manager_user.models.User;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.SqlClient;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserDao {
@@ -23,4 +24,8 @@ public interface UserDao {
     Future<Void> updatePassword(SqlClient sqlClient, Long userId, String password);
 
     Future<Void> updateStatus(SqlClient sqlClient, Long userId, AccountStatus status);
+
+    Future<List<User>> findAccountsScheduledForDeletion(SqlClient sqlClient, int limit);
+
+    Future<Void> updateUserAccountsAsDeleted(SqlClient sqlClient, List<User> users);
 }
