@@ -10,7 +10,6 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlClient;
 import org.flywaydb.core.Flyway;
 
 import java.text.MessageFormat;
@@ -19,15 +18,15 @@ import java.util.logging.Logger;
 
 public class DatabaseConfiguration {
     private static final Logger logger = Logger.getLogger(DatabaseConfiguration.class.getName());
-    private static volatile SqlClient sqlClient;
+    private static volatile PgPool pgPool;
 
     private DatabaseConfiguration() {
     }
 
-    public static SqlClient getSqlClient(Vertx vertx, JsonObject config) {
-        if (sqlClient == null) {
+    public static PgPool getSqlClient(Vertx vertx, JsonObject config) {
+        if (pgPool == null) {
             synchronized (DatabaseConfiguration.class) {
-                if (sqlClient == null) {
+                if (pgPool == null) {
                     PgConnectOptions pgConnectOptions = new PgConnectOptions()
                             .setHost(config.getString(Configuration.PG_HOST.getKey()))
                             .setPort(config.getInteger(Configuration.PG_PORT.getKey()))
@@ -36,12 +35,12 @@ public class DatabaseConfiguration {
                             .setPassword(config.getString(Configuration.PG_PASSWORD.getKey()))
                             .setCachePreparedStatements(true);
                     PoolOptions poolOptions = new PoolOptions();
-                    sqlClient = PgPool.client(vertx, pgConnectOptions, poolOptions);
+                    pgPool = PgPool.pool(vertx, pgConnectOptions, poolOptions);
                     logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE);
                 }
             }
         }
-        return sqlClient;
+        return pgPool;
     }
 
     public static MongoClient getMongoClient(Vertx vertx, JsonObject config) {

@@ -40,6 +40,12 @@ public class DbUtils {
                 .map(mapper);
     }
 
+    public static Future<Void> executeBatch(SqlClient sqlClient, String query, List<Tuple> tuples) {
+        return sqlClient.preparedQuery(query)
+                .executeBatch(tuples)
+                .compose(rowSet -> Future.succeededFuture());
+    }
+
     public static Future<Void> sqlClientHealthCheck(SqlClient sqlClient) {
         return executeQuery(sqlClient, Constants.SELECT_1, Tuple.tuple());
     }
@@ -47,5 +53,9 @@ public class DbUtils {
     public static Future<Void> mongoClientHealthCheck(MongoClient mongoClient) {
         return mongoClient.runCommand(Constants.PING, new JsonObject().put(Constants.PING, 1))
                 .compose(ob -> Future.succeededFuture());
+    }
+
+    public static Long mapRowToId(Row row) {
+        return row.getLong(ModelConstants.ID);
     }
 }

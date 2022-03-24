@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
             Object responseExceptionPayload = responseException.getPayload();
             if (Objects.nonNull(responseExceptionPayload)) {
                 String message = MessageFormat.format(MessageConstants.RESPONSE_EXCEPTION_PAYLOAD,
-                        Json.encode(responseExceptionPayload));
+                        Json.encodePrettily(responseExceptionPayload));
                 logger.log(Level.SEVERE, message);
             }
             ResponseWrapper<Object> failureResponseWrapper =

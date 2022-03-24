@@ -1,6 +1,7 @@
 package com.nagpal.shivam.workout_manager_user.models;
 
 import com.nagpal.shivam.workout_manager_user.enums.OTPPurpose;
+import com.nagpal.shivam.workout_manager_user.enums.OTPStatus;
 import com.nagpal.shivam.workout_manager_user.utils.ModelConstants;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
@@ -21,8 +22,9 @@ public class OTP extends BaseModel {
     private String email;
     private String otpHash;
     private Integer count;
-    private OffsetDateTime lastAccessTime;
+    private OffsetDateTime validAfter;
     private OTPPurpose purpose;
+    private OTPStatus otpStatus;
 
     public static OTP fromRow(Row row) {
         OTP otp = new OTP();
@@ -31,8 +33,9 @@ public class OTP extends BaseModel {
         otp.setEmail(row.getString(ModelConstants.EMAIL));
         otp.setOtpHash(row.getString(ModelConstants.OTP_HASH));
         otp.setCount(row.getInteger(ModelConstants.COUNT));
-        otp.setLastAccessTime(row.getOffsetDateTime(ModelConstants.LAST_ACCESS_TIME));
+        otp.setValidAfter(row.getOffsetDateTime(ModelConstants.VALID_AFTER));
         otp.setPurpose(OTPPurpose.valueOf(row.getString(ModelConstants.PURPOSE)));
+        otp.setOtpStatus(OTPStatus.valueOf(row.getString(ModelConstants.OTP_STATUS)));
         return otp;
     }
 
