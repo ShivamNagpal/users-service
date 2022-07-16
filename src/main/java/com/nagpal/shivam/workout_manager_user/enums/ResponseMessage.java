@@ -59,6 +59,7 @@ public enum ResponseMessage {
     DELETION_CRON_FAILED("E-033", "Deletion Cron failed"),
     DELETION_CRON_EXECUTED_SUCCESSFULLY("E-034", "Deletion Cron executed successfully"),
     UNIQUE_USER_CONSTRAINT_VIOLATION("E-035", "User with {0}"),
+    INTERNAL_SERVER_ERROR("E-036", "Internal Server Error"),
     ;
 
     private final String messageCode;

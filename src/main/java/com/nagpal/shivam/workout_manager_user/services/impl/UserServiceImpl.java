@@ -99,8 +99,11 @@ public class UserServiceImpl implements UserService {
                                         .map(otpToken -> {
                                             OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
                                             otpResponseDTO.setOtpToken(otpToken);
+                                            ResponseMessage responseMessage =
+                                                    ResponseMessage.USER_ACCOUNT_IS_UNVERIFIED;
                                             return ResponseWrapper.failure(otpResponseDTO,
-                                                    ResponseMessage.USER_ACCOUNT_IS_UNVERIFIED.getMessage()
+                                                    responseMessage.getMessageCode(),
+                                                    responseMessage.getMessage()
                                             );
                                         });
                             }

@@ -29,14 +29,16 @@ public class GlobalExceptionHandler {
                 logger.log(Level.SEVERE, message);
             }
             ResponseWrapper<Object> failureResponseWrapper =
-                    ResponseWrapper.failure(responseExceptionPayload, responseException.getMessage());
+                    ResponseWrapper.failure(responseExceptionPayload, responseException.getMessageCode(),
+                            responseException.getMessage()
+                    );
             httpServerResponse.setStatusCode(responseException.getStatus())
                     .end(Json.encodePrettily(failureResponseWrapper));
         } else {
-            HttpResponseStatus internalServerError = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+            ResponseMessage responseMessage = ResponseMessage.INTERNAL_SERVER_ERROR;
             ResponseWrapper<Object> failureResponseWrapper =
-                    ResponseWrapper.failure(null, internalServerError.reasonPhrase());
-            httpServerResponse.setStatusCode(internalServerError.code())
+                    ResponseWrapper.failure(null, responseMessage.getMessageCode(), responseMessage.getMessage());
+            httpServerResponse.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
                     .end(Json.encodePrettily(failureResponseWrapper));
         }
     }
