@@ -1,5 +1,6 @@
 package com.nagpal.shivam.workout_manager_user.enums;
 
+import com.nagpal.shivam.workout_manager_user.utils.Constants;
 import lombok.Getter;
 
 import java.text.MessageFormat;
@@ -66,7 +67,7 @@ public enum ResponseMessage {
     private final String message;
 
     ResponseMessage(String messageCode, String message) {
-        this.messageCode = "WM-U-" + messageCode;
+        this.messageCode = Constants.RESPONSE_MESSAGE_PREFIX + messageCode;
         this.message = message;
     }
 
