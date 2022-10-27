@@ -45,6 +45,8 @@ dependencies {
     implementation("org.springframework.security:spring-security-crypto:5.5.2")
     // https://mvnrepository.com/artifact/com.auth0/java-jwt
     implementation("com.auth0:java-jwt:3.18.1")
+    // https://mvnrepository.com/artifact/com.ongres.scram/client
+    implementation("com.ongres.scram:client:2.1")
 
     testImplementation("io.vertx:vertx-junit5:$vertxVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
