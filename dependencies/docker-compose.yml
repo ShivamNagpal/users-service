@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  postgres:
+    container_name: "users-service-postgres"
+    image: postgres:15.4
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=users
+    volumes:
+      - postgres_data_container:/var/lib/postgresql/data
+
+  mongo:
+    container_name: "users-service-mongo"
+    image: mongo:6.0
+    ports:
+      - "127.0.0.1:27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    volumes:
+      - mongodb_data_container:/data/db
+
+volumes:
+  postgres_data_container:
+  mongodb_data_container:
