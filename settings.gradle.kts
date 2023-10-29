@@ -1,1 +1,1 @@
-rootProject.name = "workout_manager_user"
+rootProject.name = "users_service"

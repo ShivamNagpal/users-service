@@ -18,7 +18,7 @@ val vertxVersion = "4.1.2"
 val junitJupiterVersion = "5.7.2"
 val lombokVersion = "1.18.20"
 
-val launcherClassName = "com.nagpal.shivam.workout_manager_user.Main"
+val launcherClassName = "dev.shivamnagpal.users.Main"
 
 val doOnChange = "${projectDir}/gradlew classes"
 

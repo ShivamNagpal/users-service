@@ -20,6 +20,7 @@ public enum Configuration {
     OTP_SECRET_TOKEN("otp.secret.token", "OTP_SECRET_TOKEN"),
     AUTH_TOKEN_PRIVATE_KEY("auth.token.private.key", "AUTH_TOKEN_PRIVATE_KEY"),
     AUTH_TOKEN_PUBLIC_KEY("auth.token.public.key", "AUTH_TOKEN_PUBLIC_KEY"),
+    JWT_ISSUER("jwt.issuer", "JWT_ISSUER"),
     ;
     public static final List<Configuration> MANDATORY_CONFIGURATIONS =
             List.of(SERVER_PORT, PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD, MONGO_CONNECTION_URI,

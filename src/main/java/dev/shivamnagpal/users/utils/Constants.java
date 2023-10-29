@@ -30,7 +30,6 @@ public class Constants {
     public static final String BCRYPT_OTP_LOG_ROUNDS = "bcrypt.otp.log.rounds";
     public static final String EMAIL = "email";
     public static final String OTP_PURPOSE = "otpPurpose";
-    public static final String ISSUER_WORKOUT_MANAGER = "WORKOUT_MANAGER";
     public static final String OTP_TOKEN = "otp-token";
     public static final String SESSION_ID = "sessionId";
     public static final String ROLES = "roles";
@@ -40,7 +39,7 @@ public class Constants {
     public static final String REFRESH_TOKEN_SEPARATOR = "-";
     public static final String DOLLAR_SET = "$set";
     public static final String AUTHORIZATION = "Authorization";
-    public static final String BEARER_ = "Bearer ";
+    public static final String BEARER_SPACE = "Bearer ";
     public static final String TRUE = "true";
     public static final String FALSE = "false";
     public static final String DELETION_SELECT_PERIOD_IN_DAYS = "deletion.cron.select.period.in.days";
