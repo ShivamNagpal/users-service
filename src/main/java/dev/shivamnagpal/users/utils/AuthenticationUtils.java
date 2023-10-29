@@ -22,7 +22,7 @@ public class AuthenticationUtils {
                     MessageConstants.AUTHORIZATION_HEADER_NOT_PROVIDED, null
             ));
         }
-        if (!authorizationValue.startsWith(Constants.BEARER_)) {
+        if (!authorizationValue.startsWith(Constants.BEARER_SPACE)) {
             return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
                     MessageConstants.AUTHORIZATION_TOKEN_MUST_START_WITH_THE_BEARER, null
             ));

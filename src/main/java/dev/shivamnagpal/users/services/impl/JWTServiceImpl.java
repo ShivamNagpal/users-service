@@ -42,8 +42,9 @@ public class JWTServiceImpl implements JWTService {
         this.config = config;
         otpSigningAlgorithm = Algorithm.HMAC512(config.getString(Configuration.OTP_SECRET_TOKEN.getKey()));
         authTokenSigningAlgorithm = getRSAAlgorithm();
-        otpTokenVerifier = JWT.require(otpSigningAlgorithm).withIssuer(Constants.ISSUER_WORKOUT_MANAGER).build();
-        authTokenVerifier = JWT.require(authTokenSigningAlgorithm).withIssuer(Constants.ISSUER_WORKOUT_MANAGER).build();
+        String jwtIssuer = config.getString(Configuration.JWT_ISSUER.getKey());
+        otpTokenVerifier = JWT.require(otpSigningAlgorithm).withIssuer(jwtIssuer).build();
+        authTokenVerifier = JWT.require(authTokenSigningAlgorithm).withIssuer(jwtIssuer).build();
     }
 
     @SneakyThrows
@@ -66,7 +67,7 @@ public class JWTServiceImpl implements JWTService {
                 .withExpiresAt(UtilMethods.convertLocalDateTimeToDate(
                         LocalDateTime.now().plusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME))
                 ))
-                .withIssuer(Constants.ISSUER_WORKOUT_MANAGER)
+                .withIssuer(Configuration.JWT_ISSUER.getKey())
                 .withIssuedAt(new Date())
                 .sign(otpSigningAlgorithm);
     }
@@ -99,7 +100,7 @@ public class JWTServiceImpl implements JWTService {
                 .withExpiresAt(UtilMethods.convertLocalDateTimeToDate(
                         LocalDateTime.now().plusSeconds(config.getInteger(Constants.JWT_EXPIRY_TIME))
                 ))
-                .withIssuer(Constants.ISSUER_WORKOUT_MANAGER)
+                .withIssuer(Configuration.JWT_ISSUER.getKey())
                 .withIssuedAt(new Date())
                 .sign(authTokenSigningAlgorithm);
     }

@@ -16,7 +16,7 @@ public class MessageConstants {
     public static final String REQUEST_BODY_NOT_PROVIDED = "Request Body not provided";
     public static final String PG_POOL_HEALTH_CHECK_FAILED = "PG Pool Health Check Failed";
     public static final String MONGO_CLIENT_HEALTH_CHECK_FAILED = "Mongo Client Health Check Failed";
-    public static final String OTP_EMAIL_SUBJECT = "OTP From Workout Manager";
+    public static final String OTP_EMAIL_SUBJECT = "OTP for verification";
     public static final String OTP_EMAIL_CONTENT_FORMAT = "Please use this OTP {0}";
     public static final String OTP_TOKEN_NOT_PROVIDED = "OTP Token not provided";
     public static final String INVALID_OTP_TOKEN = "Invalid OTP Token";
