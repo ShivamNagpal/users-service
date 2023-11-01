@@ -4,19 +4,27 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 plugins {
     java
     application
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "com.nagpal.shivam"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
 }
 
-val vertxVersion = "4.1.2"
-val junitJupiterVersion = "5.7.2"
-val lombokVersion = "1.18.20"
+object Versions {
+    const val FLYWAY = "9.22.3"
+    const val JACKSON = "2.15.3"
+    const val JAVA_JWT = "3.19.4"
+    const val JUNIT_JUPITER = "5.9.1"
+    const val LOMBOK = "1.18.30"
+    const val POSTGRESQL = "42.6.0"
+    const val SCRAM_CLIENT = "2.1"
+    const val SPRING_SECURITY = "5.8.8"
+    const val VERTX = "4.4.6"
+}
 
 val launcherClassName = "dev.shivamnagpal.users.Main"
 
@@ -27,31 +35,31 @@ application {
 }
 
 dependencies {
-    implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
-    implementation("io.vertx:vertx-config:$vertxVersion")
-    implementation("io.vertx:vertx-web-validation:$vertxVersion")
-    implementation("io.vertx:vertx-pg-client:$vertxVersion")
-    implementation("io.vertx:vertx-mongo-client:$vertxVersion")
-    implementation("io.vertx:vertx-mail-client:$vertxVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.5")
-    compileOnly("org.projectlombok:lombok:$lombokVersion")
-    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+    implementation(platform("io.vertx:vertx-stack-depchain:${Versions.VERTX}"))
+    implementation("io.vertx:vertx-config:${Versions.VERTX}")
+    implementation("io.vertx:vertx-web-validation:${Versions.VERTX}")
+    implementation("io.vertx:vertx-pg-client:${Versions.VERTX}")
+    implementation("io.vertx:vertx-mongo-client:${Versions.VERTX}")
+    implementation("io.vertx:vertx-mail-client:${Versions.VERTX}")
+    implementation("com.fasterxml.jackson.core:jackson-databind:${Versions.JACKSON}")
+    compileOnly("org.projectlombok:lombok:${Versions.LOMBOK}")
+    annotationProcessor("org.projectlombok:lombok:${Versions.LOMBOK}")
     // https://mvnrepository.com/artifact/org.flywaydb/flyway-core
-    implementation("org.flywaydb:flyway-core:7.14.1")
-    // Note: Blocking Driver, so included only for Flyway to work
+    implementation("org.flywaydb:flyway-core:${Versions.FLYWAY}")
+    // Note: Blocking Driver, included only for Flyway to work
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.2.23")
+    implementation("org.postgresql:postgresql:${Versions.POSTGRESQL}")
     // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
-    implementation("org.springframework.security:spring-security-crypto:5.5.2")
+    implementation("org.springframework.security:spring-security-crypto:${Versions.SPRING_SECURITY}")
     // https://mvnrepository.com/artifact/com.auth0/java-jwt
-    implementation("com.auth0:java-jwt:3.18.1")
+    implementation("com.auth0:java-jwt:${Versions.JAVA_JWT}")
     // https://mvnrepository.com/artifact/com.ongres.scram/client
-    implementation("com.ongres.scram:client:2.1")
+    implementation("com.ongres.scram:client:${Versions.SCRAM_CLIENT}")
 
-    testImplementation("io.vertx:vertx-junit5:$vertxVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
-    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
-    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+    testImplementation("io.vertx:vertx-junit5:${Versions.VERTX}")
+    testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")
+    testCompileOnly("org.projectlombok:lombok:${Versions.LOMBOK}")
+    testAnnotationProcessor("org.projectlombok:lombok:${Versions.LOMBOK}")
 }
 
 java {
