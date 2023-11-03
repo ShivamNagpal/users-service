@@ -14,14 +14,18 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SessionPayload {
     private String sessionId;
+
     private String refreshToken;
 
     public static Future<SessionPayload> fromRefreshToken(String refreshToken) {
         String[] split = refreshToken.split(Constants.REFRESH_TOKEN_SEPARATOR, 2);
         if (split.length != 2) {
-            return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                    MessageConstants.INVALID_REFRESH_TOKEN, null
-            ));
+            return Future.failedFuture(
+                    new ResponseException(
+                            HttpResponseStatus.BAD_REQUEST.code(),
+                            MessageConstants.INVALID_REFRESH_TOKEN, null
+                    )
+            );
         }
         SessionPayload sessionPayload = new SessionPayload();
         sessionPayload.setSessionId(split[0]);

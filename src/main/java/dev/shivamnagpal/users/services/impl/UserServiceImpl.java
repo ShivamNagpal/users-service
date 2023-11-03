@@ -34,17 +34,31 @@ import java.util.List;
 
 public class UserServiceImpl implements UserService {
     private final PgPool pgPool;
+
     private final MongoClient mongoClient;
+
     private final UserDao userDao;
+
     private final OTPService otpService;
+
     private final SessionService sessionService;
+
     private final RoleDao roleDao;
+
     private final SessionDao sessionDao;
+
     private final UserHelper userHelper;
 
-    public UserServiceImpl(PgPool pgPool, MongoClient mongoClient, UserDao userDao, OTPService otpService,
-                           SessionService sessionService, RoleDao roleDao, SessionDao sessionDao,
-                           UserHelper userHelper) {
+    public UserServiceImpl(
+            PgPool pgPool,
+            MongoClient mongoClient,
+            UserDao userDao,
+            OTPService otpService,
+            SessionService sessionService,
+            RoleDao roleDao,
+            SessionDao sessionDao,
+            UserHelper userHelper
+    ) {
         this.pgPool = pgPool;
         this.mongoClient = mongoClient;
         this.userDao = userDao;
@@ -64,57 +78,76 @@ public class UserServiceImpl implements UserService {
         user.setEmailVerified(false);
         user.setAccountStatus(AccountStatus.UNVERIFIED);
 
-        return pgPool.withTransaction(client -> userDao.signUp(client, user)
-                .compose(userId -> otpService.triggerEmailVerification(client, userId, user.getEmail(),
+        return pgPool.withTransaction(
+                client -> userDao.signUp(client, user)
+                        .compose(
+                                userId -> otpService.triggerEmailVerification(
+                                        client,
+                                        userId,
+                                        user.getEmail(),
                                         OTPPurpose.VERIFY_USER
                                 )
-                                .map(otpToken -> {
-                                    OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
-                                    otpResponseDTO.setOtpToken(otpToken);
-                                    return otpResponseDTO;
-                                })
-                )
+                                        .map(otpToken -> {
+                                            OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
+                                            otpResponseDTO.setOtpToken(otpToken);
+                                            return otpResponseDTO;
+                                        })
+                        )
         );
     }
 
     @Override
     public Future<Object> login(LoginRequestDTO loginRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> userHelper.getUserByEmail(sqlConnection,
-                                loginRequestDTO.getEmail()
-                        )
+        return pgPool.withTransaction(
+                sqlConnection -> userHelper.getUserByEmail(
+                        sqlConnection,
+                        loginRequestDTO.getEmail()
+                )
                         .compose(user -> {
                             if (!BCrypt.checkpw(loginRequestDTO.getPassword(), user.getPassword())) {
                                 return Future.failedFuture(
-                                        new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                        new ResponseException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
                                                 MessageConstants.INVALID_CREDENTIALS,
                                                 null
-                                        ));
+                                        )
+                                );
                             }
                             if (user.getEmailVerified() == null || !user.getEmailVerified()) {
-                                return otpService.triggerEmailVerification(sqlConnection, user.getId(), user.getEmail(),
-                                                OTPPurpose.VERIFY_USER
-                                        )
+                                return otpService.triggerEmailVerification(
+                                        sqlConnection,
+                                        user.getId(),
+                                        user.getEmail(),
+                                        OTPPurpose.VERIFY_USER
+                                )
                                         .map(otpToken -> {
                                             OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
                                             otpResponseDTO.setOtpToken(otpToken);
-                                            return ResponseWrapper.failure(otpResponseDTO,
+                                            return ResponseWrapper.failure(
+                                                    otpResponseDTO,
                                                     MessageConstants.USER_ACCOUNT_IS_UNVERIFIED
                                             );
                                         });
                             }
                             if (user.getAccountStatus() != AccountStatus.ACTIVE) {
                                 return Future.failedFuture(
-                                        new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                        new ResponseException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
                                                 MessageConstants.USER_ACCOUNT_IS_NOT_ACTIVE,
                                                 null
-                                        ));
+                                        )
+                                );
                             }
                             return roleDao.fetchRolesByUserIdAndDeleted(sqlConnection, user.getId(), false)
                                     .compose(roles -> {
-                                        String[] rolesArray =
-                                                roles.stream().map(r -> r.getRoleName().name()).toArray(String[]::new);
-                                        return sessionService.createNewSessionAndFormLoginResponse(mongoClient,
-                                                user.getId(), rolesArray);
+                                        String[] rolesArray = roles.stream()
+                                                .map(r -> r.getRoleName().name())
+                                                .toArray(String[]::new);
+                                        return sessionService.createNewSessionAndFormLoginResponse(
+                                                mongoClient,
+                                                user.getId(),
+                                                rolesArray
+                                        );
                                     })
                                     .map(obj -> obj);
                         })
@@ -134,8 +167,8 @@ public class UserServiceImpl implements UserService {
     public Future<UserResponseDTO> getById(JWTAuthTokenDTO jwtAuthTokenDTO) {
         return pgPool.withTransaction(sqlConnection -> {
             Future<User> userFuture = userHelper.getUserById(sqlConnection, jwtAuthTokenDTO.getUserId());
-            Future<List<Role>> rolesFuture =
-                    roleDao.fetchRolesByUserIdAndDeleted(sqlConnection, jwtAuthTokenDTO.getUserId(), false);
+            Future<List<Role>> rolesFuture = roleDao
+                    .fetchRolesByUserIdAndDeleted(sqlConnection, jwtAuthTokenDTO.getUserId(), false);
             return CompositeFuture.all(userFuture, rolesFuture)
                     .map(compositeFuture -> {
                         User user = compositeFuture.resultAt(0);
@@ -147,58 +180,89 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Future<UserResponseDTO> update(JWTAuthTokenDTO jwtAuthTokenDTO, UserUpdateRequestDTO userUpdateRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> userHelper.getUserById(sqlConnection,
+        return pgPool.withTransaction(
+                sqlConnection -> userHelper.getUserById(
+                        sqlConnection,
                         jwtAuthTokenDTO.getUserId()
                 )
-                .compose(user -> {
-                    user.setFirstName(userUpdateRequestDTO.getFirstName());
-                    user.setLastName(userUpdateRequestDTO.getLastName());
-                    return userDao.update(sqlConnection, user)
-                            .map(v -> UserResponseDTO.from(user, null));
-                }));
+                        .compose(user -> {
+                            user.setFirstName(userUpdateRequestDTO.getFirstName());
+                            user.setLastName(userUpdateRequestDTO.getLastName());
+                            return userDao.update(sqlConnection, user)
+                                    .map(v -> UserResponseDTO.from(user, null));
+                        })
+        );
     }
 
     @Override
-    public Future<OTPResponseDTO> updateEmail(JWTAuthTokenDTO jwtAuthTokenDTO,
-                                              EmailRequestDTO emailRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> userHelper.getUserById(sqlConnection,
+    public Future<OTPResponseDTO> updateEmail(
+            JWTAuthTokenDTO jwtAuthTokenDTO,
+            EmailRequestDTO emailRequestDTO
+    ) {
+        return pgPool.withTransaction(
+                sqlConnection -> userHelper.getUserById(
+                        sqlConnection,
                         jwtAuthTokenDTO.getUserId()
                 )
-                .compose(user -> {
-                    if (user.getEmail().equals(emailRequestDTO.getEmail())) {
-                        return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                MessageConstants.NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL, null
-                        ));
-                    }
-                    return otpService.triggerEmailVerification(sqlConnection, jwtAuthTokenDTO.getUserId(),
-                                    emailRequestDTO.getEmail(), OTPPurpose.UPDATE_EMAIL
+                        .compose(user -> {
+                            if (user.getEmail().equals(emailRequestDTO.getEmail())) {
+                                return Future.failedFuture(
+                                        new ResponseException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                                MessageConstants.NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL, null
+                                        )
+                                );
+                            }
+                            return otpService.triggerEmailVerification(
+                                    sqlConnection,
+                                    jwtAuthTokenDTO.getUserId(),
+                                    emailRequestDTO.getEmail(),
+                                    OTPPurpose.UPDATE_EMAIL
                             )
-                            .map(otpToken -> {
-                                OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
-                                otpResponseDTO.setOtpToken(otpToken);
-                                return otpResponseDTO;
-                            });
-                }));
+                                    .map(otpToken -> {
+                                        OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
+                                        otpResponseDTO.setOtpToken(otpToken);
+                                        return otpResponseDTO;
+                                    });
+                        })
+        );
     }
 
     @Override
-    public Future<LoginResponseDTO> updatePassword(JWTAuthTokenDTO jwtAuthTokenDTO,
-                                                   PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> userHelper.updatePasswordAndLogOutAllSessions(sqlConnection,
-                                mongoClient, jwtAuthTokenDTO.getUserId(), passwordUpdateRequestDTO
+    public Future<LoginResponseDTO> updatePassword(
+            JWTAuthTokenDTO jwtAuthTokenDTO,
+            PasswordUpdateRequestDTO passwordUpdateRequestDTO
+    ) {
+        return pgPool.withTransaction(
+                sqlConnection -> userHelper.updatePasswordAndLogOutAllSessions(
+                        sqlConnection,
+                        mongoClient,
+                        jwtAuthTokenDTO.getUserId(),
+                        passwordUpdateRequestDTO
+                )
+                        .compose(
+                                v -> sessionService.createNewSessionAndFormLoginResponse(
+                                        mongoClient,
+                                        jwtAuthTokenDTO.getUserId(),
+                                        jwtAuthTokenDTO.getRoles()
+                                )
                         )
-                        .compose(v -> sessionService.createNewSessionAndFormLoginResponse(mongoClient,
-                                jwtAuthTokenDTO.getUserId(), jwtAuthTokenDTO.getRoles()
-                        ))
         );
     }
 
     @Override
     public Future<OTPResponseDTO> resetPassword(EmailRequestDTO emailRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> userHelper.getUserByEmail(sqlConnection,
-                                emailRequestDTO.getEmail()
-                        )
-                        .compose(user -> otpService.triggerEmailVerification(sqlConnection, user.getId(), user.getEmail(),
+        return pgPool.withTransaction(
+                sqlConnection -> userHelper.getUserByEmail(
+                        sqlConnection,
+                        emailRequestDTO.getEmail()
+                )
+                        .compose(
+                                user -> otpService
+                                        .triggerEmailVerification(
+                                                sqlConnection,
+                                                user.getId(),
+                                                user.getEmail(),
                                                 OTPPurpose.RESET_PASSWORD
                                         )
                                         .map(otpToken -> {
@@ -212,11 +276,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Future<Void> deactivate(JWTAuthTokenDTO jwtAuthTokenDTO) {
-        return pgPool.withTransaction(sqlConnection -> sessionDao.logoutAllSessions(mongoClient,
-                                jwtAuthTokenDTO.getUserId()
-                        )
-                        .compose(v -> userDao.updateStatus(sqlConnection, jwtAuthTokenDTO.getUserId(),
-                                AccountStatus.DEACTIVATED)
+        return pgPool.withTransaction(
+                sqlConnection -> sessionDao.logoutAllSessions(
+                        mongoClient,
+                        jwtAuthTokenDTO.getUserId()
+                )
+                        .compose(
+                                v -> userDao.updateStatus(
+                                        sqlConnection,
+                                        jwtAuthTokenDTO.getUserId(),
+                                        AccountStatus.DEACTIVATED
+                                )
                         )
         );
     }
@@ -228,18 +298,24 @@ public class UserServiceImpl implements UserService {
                         .compose(user -> {
                             if (!BCrypt.checkpw(loginRequestDTO.getPassword(), user.getPassword())) {
                                 return Future.failedFuture(
-                                        new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                        new ResponseException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
                                                 MessageConstants.INVALID_CREDENTIALS,
                                                 null
-                                        ));
+                                        )
+                                );
                             }
-                            if (user.getAccountStatus() != AccountStatus.DEACTIVATED &&
-                                    user.getAccountStatus() != AccountStatus.SCHEDULED_FOR_DELETION) {
+                            if (
+                                user.getAccountStatus() != AccountStatus.DEACTIVATED &&
+                                        user.getAccountStatus() != AccountStatus.SCHEDULED_FOR_DELETION
+                            ) {
                                 return Future.failedFuture(
-                                        new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                        new ResponseException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
                                                 MessageConstants.USER_ACCOUNT_WASN_T_DEACTIVATED_OR_MARKED_FOR_DELETION,
                                                 null
-                                        ));
+                                        )
+                                );
                             }
                             return userDao.updateStatus(sqlConnection, user.getId(), AccountStatus.ACTIVE);
                         })
@@ -248,11 +324,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Future<Void> scheduleForDeletion(JWTAuthTokenDTO jwtAuthTokenDTO) {
-        return pgPool.withTransaction(sqlConnection -> sessionDao.logoutAllSessions(mongoClient,
-                                jwtAuthTokenDTO.getUserId()
-                        )
-                        .compose(v -> userDao.updateStatus(sqlConnection, jwtAuthTokenDTO.getUserId(),
-                                AccountStatus.SCHEDULED_FOR_DELETION)
+        return pgPool.withTransaction(
+                sqlConnection -> sessionDao.logoutAllSessions(
+                        mongoClient,
+                        jwtAuthTokenDTO.getUserId()
+                )
+                        .compose(
+                                v -> userDao.updateStatus(
+                                        sqlConnection,
+                                        jwtAuthTokenDTO.getUserId(),
+                                        AccountStatus.SCHEDULED_FOR_DELETION
+                                )
                         )
         );
     }

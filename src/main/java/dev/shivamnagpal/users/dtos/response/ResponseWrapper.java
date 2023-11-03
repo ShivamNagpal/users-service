@@ -10,8 +10,10 @@ import lombok.Setter;
 @Setter
 public class ResponseWrapper<T> {
     private boolean success;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T payload;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
 

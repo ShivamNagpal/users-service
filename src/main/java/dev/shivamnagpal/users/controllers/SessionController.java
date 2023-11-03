@@ -13,6 +13,7 @@ import io.vertx.ext.web.Router;
 
 public class SessionController {
     private final Router router;
+
     private final SessionService sessionService;
 
     public SessionController(Vertx vertx, Router mainRouter, SessionService sessionService) {
@@ -29,14 +30,18 @@ public class SessionController {
 
     private void refreshToken() {
         router.post(RoutingConstants.REFRESH_TOKEN)
-                .handler(routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
-                        .compose(RefreshSessionRequestDTO::fromRequest)
-                        .compose(sessionService::refreshSession)
-                        .onSuccess(obj -> routingContext.response()
-                                .setStatusCode(HttpResponseStatus.OK.code())
-                                .end(Json.encodePrettily(ResponseWrapper.success(obj)))
-                        )
-                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
+                .handler(
+                        routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
+                                .compose(RefreshSessionRequestDTO::fromRequest)
+                                .compose(sessionService::refreshSession)
+                                .onSuccess(
+                                        obj -> routingContext.response()
+                                                .setStatusCode(HttpResponseStatus.OK.code())
+                                                .end(Json.encodePrettily(ResponseWrapper.success(obj)))
+                                )
+                                .onFailure(
+                                        throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                                )
                 );
     }
 }

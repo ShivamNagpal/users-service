@@ -21,10 +21,11 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-
 public class UserHelper {
     private final JsonObject config;
+
     private final UserDao userDao;
+
     private final SessionDao sessionDao;
 
     public UserHelper(JsonObject config, UserDao userDao, SessionDao sessionDao) {
@@ -38,8 +39,10 @@ public class UserHelper {
                 .compose(userOptional -> {
                     if (userOptional.isEmpty()) {
                         return Future.failedFuture(
-                                new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                                        MessageConstants.USER_NOT_FOUND, null)
+                                new ResponseException(
+                                        HttpResponseStatus.BAD_REQUEST.code(),
+                                        MessageConstants.USER_NOT_FOUND, null
+                                )
                         );
                     }
                     return Future.succeededFuture(userOptional.get());
@@ -50,63 +53,85 @@ public class UserHelper {
         return userDao.getUserByEmail(sqlConnection, email)
                 .compose(userOptional -> {
                     if (userOptional.isEmpty()) {
-                        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                                MessageConstants.USER_NOT_FOUND,
-                                null
-                        ));
+                        return Future.failedFuture(
+                                new ResponseException(
+                                        HttpResponseStatus.BAD_REQUEST.code(),
+                                        MessageConstants.USER_NOT_FOUND,
+                                        null
+                                )
+                        );
                     }
                     return Future.succeededFuture(userOptional.get());
                 });
     }
 
-    public Future<Void> updatePasswordAndLogOutAllSessions(SqlConnection sqlConnection, MongoClient mongoClient,
-                                                           Long userId,
-                                                           PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
+    public Future<Void> updatePasswordAndLogOutAllSessions(
+            SqlConnection sqlConnection,
+            MongoClient mongoClient,
+            Long userId,
+            PasswordUpdateRequestDTO passwordUpdateRequestDTO
+    ) {
         return getUserById(sqlConnection, userId)
-                .compose(user -> updatePasswordAndLogOutAllSessions(sqlConnection, mongoClient, user,
-                        passwordUpdateRequestDTO
-                ));
+                .compose(
+                        user -> updatePasswordAndLogOutAllSessions(
+                                sqlConnection,
+                                mongoClient,
+                                user,
+                                passwordUpdateRequestDTO
+                        )
+                );
     }
 
-    public Future<Void> updatePasswordAndLogOutAllSessions(SqlConnection sqlConnection, MongoClient mongoClient,
-                                                           User user,
-                                                           PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
+    public Future<Void> updatePasswordAndLogOutAllSessions(
+            SqlConnection sqlConnection,
+            MongoClient mongoClient,
+            User user,
+            PasswordUpdateRequestDTO passwordUpdateRequestDTO
+    ) {
         if (BCrypt.checkpw(passwordUpdateRequestDTO.getPlainPassword(), user.getPassword())) {
-            return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                    MessageConstants.NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD, null
-            ));
+            return Future.failedFuture(
+                    new ResponseException(
+                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                            MessageConstants.NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD, null
+                    )
+            );
         }
         return userDao.updatePassword(sqlConnection, user.getId(), passwordUpdateRequestDTO.getHashedPassword())
                 .compose(v -> sessionDao.logoutAllSessions(mongoClient, user.getId()));
     }
 
     public Future<Void> deleteScheduleAccount(PgPool pgPool) {
-        return UtilMethods.nonBlockingWhile(() -> deleteScheduleAccountBatch(pgPool),
-                        size -> size < config.getInteger(Constants.DELETION_CRON_BATCH_SIZE))
+        return UtilMethods.nonBlockingWhile(
+                () -> deleteScheduleAccountBatch(pgPool),
+                size -> size < config.getInteger(Constants.DELETION_CRON_BATCH_SIZE)
+        )
                 .compose(s -> Future.succeededFuture());
     }
 
     private Future<Integer> deleteScheduleAccountBatch(PgPool pgPool) {
-        return pgPool.withTransaction(sqlConnection -> userDao.findAccountsScheduledForDeletion(sqlConnection,
+        return pgPool.withTransaction(
+                sqlConnection -> userDao.findAccountsScheduledForDeletion(
+                        sqlConnection,
                         config.getInteger(Constants.DELETION_CRON_BATCH_SIZE)
                 )
-                .compose(users -> {
-                    if (users.isEmpty()) {
-                        return Future.succeededFuture(0);
-                    }
-                    OffsetDateTime currentTime = OffsetDateTime.now();
-                    for (User user : users) {
-                        user.setAccountStatus(AccountStatus.DELETED);
-                        if (user.getMeta() == null) {
-                            user.setMeta(new JsonObject());
-                        }
-                        user.getMeta().put(ModelConstants.EMAIL, user.getEmail());
-                        user.setEmail(UUID.randomUUID().toString());
-                        user.setDeleted(true);
-                        user.setTimeLastModified(currentTime);
-                    }
-                    return userDao.updateUserAccountsAsDeleted(sqlConnection, users)
-                            .map(users.size());
-                }));
+                        .compose(users -> {
+                            if (users.isEmpty()) {
+                                return Future.succeededFuture(0);
+                            }
+                            OffsetDateTime currentTime = OffsetDateTime.now();
+                            for (User user : users) {
+                                user.setAccountStatus(AccountStatus.DELETED);
+                                if (user.getMeta() == null) {
+                                    user.setMeta(new JsonObject());
+                                }
+                                user.getMeta().put(ModelConstants.EMAIL, user.getEmail());
+                                user.setEmail(UUID.randomUUID().toString());
+                                user.setDeleted(true);
+                                user.setTimeLastModified(currentTime);
+                            }
+                            return userDao.updateUserAccountsAsDeleted(sqlConnection, users)
+                                    .map(users.size());
+                        })
+        );
     }
 }

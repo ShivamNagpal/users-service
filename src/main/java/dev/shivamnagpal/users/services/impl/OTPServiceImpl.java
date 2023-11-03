@@ -33,20 +33,39 @@ import java.util.Random;
 
 public class OTPServiceImpl implements OTPService {
     private final JsonObject config;
+
     private final PgPool pgPool;
+
     private final MongoClient mongoClient;
+
     private final OTPDao otpDao;
+
     private final EmailService emailService;
+
     private final SessionService sessionService;
+
     private final JWTService jwtService;
+
     private final UserHelper userHelper;
+
     private final UserDao userDao;
+
     private final RoleDao roleDao;
+
     private final Random random;
 
-    public OTPServiceImpl(JsonObject config, PgPool pgPool, MongoClient mongoClient, OTPDao otpDao,
-                          EmailService emailService, SessionService sessionService, JWTService jwtService,
-                          UserHelper userHelper, UserDao userDao, RoleDao roleDao) {
+    public OTPServiceImpl(
+            JsonObject config,
+            PgPool pgPool,
+            MongoClient mongoClient,
+            OTPDao otpDao,
+            EmailService emailService,
+            SessionService sessionService,
+            JWTService jwtService,
+            UserHelper userHelper,
+            UserDao userDao,
+            RoleDao roleDao
+    ) {
         this.config = config;
         this.pgPool = pgPool;
         this.mongoClient = mongoClient;
@@ -62,8 +81,12 @@ public class OTPServiceImpl implements OTPService {
 
     @Override
     public Future<OTPResponseDTO> resendOTP(JWTOTPTokenDTO jwtotpTokenDTO) {
-        return triggerEmailVerification(pgPool, jwtotpTokenDTO.getUserId(), jwtotpTokenDTO.getEmail(),
-                jwtotpTokenDTO.getOtpPurpose())
+        return triggerEmailVerification(
+                pgPool,
+                jwtotpTokenDTO.getUserId(),
+                jwtotpTokenDTO.getEmail(),
+                jwtotpTokenDTO.getOtpPurpose()
+        )
                 .map(newOtpToken -> {
                     OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
                     otpResponseDTO.setOtpToken(newOtpToken);
@@ -73,20 +96,30 @@ public class OTPServiceImpl implements OTPService {
 
     @Override
     public Future<Object> verifyOTP(JWTOTPTokenDTO jwtotpTokenDTO, VerifyOTPRequestDTO verifyOTPRequestDTO) {
-        return pgPool.withTransaction(sqlConnection -> otpDao.fetchActiveOTP(sqlConnection, jwtotpTokenDTO.getUserId(),
-                                jwtotpTokenDTO.getEmail(), jwtotpTokenDTO.getOtpPurpose()
-                        )
+        return pgPool.withTransaction(
+                sqlConnection -> otpDao.fetchActiveOTP(
+                        sqlConnection,
+                        jwtotpTokenDTO.getUserId(),
+                        jwtotpTokenDTO.getEmail(),
+                        jwtotpTokenDTO.getOtpPurpose()
+                )
                         .compose(otpOptional -> {
                             if (otpOptional.isEmpty()) {
-                                return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                        MessageConstants.NO_ACTIVE_TRIGGERED_OTP_FOUND, null
-                                ));
+                                return Future.failedFuture(
+                                        new ResponseException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                                MessageConstants.NO_ACTIVE_TRIGGERED_OTP_FOUND, null
+                                        )
+                                );
                             }
                             OTP otp = otpOptional.get();
                             if (!BCrypt.checkpw(String.valueOf(verifyOTPRequestDTO.getOtp()), otp.getOtpHash())) {
-                                return Future.failedFuture(new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                        MessageConstants.INCORRECT_OTP, null
-                                ));
+                                return Future.failedFuture(
+                                        new ResponseException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                                MessageConstants.INCORRECT_OTP, null
+                                        )
+                                );
                             }
                             return Future.succeededFuture(otp);
                         })
@@ -96,35 +129,52 @@ public class OTPServiceImpl implements OTPService {
                             switch (jwtotpTokenDTO.getOtpPurpose()) {
                                 case VERIFY_USER:
                                     actionPostOTPVerification = userDao.activateUser(
-                                                    sqlConnection,
-                                                    jwtotpTokenDTO.getUserId()
+                                            sqlConnection,
+                                            jwtotpTokenDTO.getUserId()
+                                    )
+                                            .compose(
+                                                    v2 -> roleDao.insertRole(
+                                                            sqlConnection,
+                                                            jwtotpTokenDTO.getUserId(),
+                                                            RoleName.USER
+                                                    )
                                             )
-                                            .compose(v2 -> roleDao.insertRole(sqlConnection, jwtotpTokenDTO.getUserId(),
-                                                    RoleName.USER)
+                                            .compose(
+                                                    id -> sessionService.createNewSessionAndFormLoginResponse(
+                                                            mongoClient,
+                                                            jwtotpTokenDTO.getUserId(),
+                                                            new String[] { RoleName.USER.name() }
+                                                    )
                                             )
-                                            .compose(id -> sessionService.createNewSessionAndFormLoginResponse(mongoClient,
-                                                    jwtotpTokenDTO.getUserId(), new String[]{RoleName.USER.name()}
-                                            ))
                                             .map(loginResponseDTO -> loginResponseDTO);
                                     break;
                                 case UPDATE_EMAIL:
-                                    actionPostOTPVerification = userDao.updateEmail(sqlConnection,
-                                                    jwtotpTokenDTO.getUserId(), jwtotpTokenDTO.getEmail()
-                                            )
+                                    actionPostOTPVerification = userDao.updateEmail(
+                                            sqlConnection,
+                                            jwtotpTokenDTO.getUserId(),
+                                            jwtotpTokenDTO.getEmail()
+                                    )
                                             .compose(v2 -> Future.succeededFuture());
                                     break;
                                 case RESET_PASSWORD:
-                                    actionPostOTPVerification = userHelper.getUserById(sqlConnection,
-                                                    jwtotpTokenDTO.getUserId())
+                                    actionPostOTPVerification = userHelper.getUserById(
+                                            sqlConnection,
+                                            jwtotpTokenDTO.getUserId()
+                                    )
                                             .compose(user -> {
-                                                Future<Void> future =
-                                                        userHelper.updatePasswordAndLogOutAllSessions(sqlConnection,
-                                                                mongoClient, user, verifyOTPRequestDTO
-                                                        );
+                                                Future<Void> future = userHelper.updatePasswordAndLogOutAllSessions(
+                                                        sqlConnection,
+                                                        mongoClient,
+                                                        user,
+                                                        verifyOTPRequestDTO
+                                                );
                                                 if (user.getEmailVerified() == null || !user.getEmailVerified()) {
-                                                    future = future.compose(v2 -> userDao.activateUser(sqlConnection,
-                                                            user.getId()
-                                                    ));
+                                                    future = future.compose(
+                                                            v2 -> userDao.activateUser(
+                                                                    sqlConnection,
+                                                                    user.getId()
+                                                            )
+                                                    );
                                                 }
                                                 return future;
                                             })
@@ -144,8 +194,12 @@ public class OTPServiceImpl implements OTPService {
     }
 
     @Override
-    public Future<String> triggerEmailVerification(SqlClient sqlClient, Long userId, String email,
-                                                   OTPPurpose otpPurpose) {
+    public Future<String> triggerEmailVerification(
+            SqlClient sqlClient,
+            Long userId,
+            String email,
+            OTPPurpose otpPurpose
+    ) {
         return otpDao.fetchAlreadyTriggeredOTP(sqlClient, userId, email, otpPurpose)
                 .compose(otpOptional -> {
                     int otpValue = generateOTP();
@@ -166,9 +220,14 @@ public class OTPServiceImpl implements OTPService {
                                 otp.setOtpStatus(OTPStatus.OTP_RESEND_LIMIT_REACHED);
                                 future = otpDao.update(sqlClient, otp);
                             }
-                            return future.compose(v -> Future.failedFuture(
-                                    new ResponseException(HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                            MessageConstants.OTP_RESEND_LIMIT_EXCEEDED, null)));
+                            return future.compose(
+                                    v -> Future.failedFuture(
+                                            new ResponseException(
+                                                    HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                                                    MessageConstants.OTP_RESEND_LIMIT_EXCEEDED, null
+                                            )
+                                    )
+                            );
                         }
                         saveFuture = otpDao.update(sqlClient, otp).map(otpValue);
                     } else {
@@ -185,7 +244,8 @@ public class OTPServiceImpl implements OTPService {
                         saveFuture = otpDao.insert(sqlClient, otp).map(otpValue);
                     }
                     return saveFuture;
-                }).compose(otpValue -> {
+                })
+                .compose(otpValue -> {
                     emailService.sendOTPEmail(email, otpValue);
                     JWTOTPTokenDTO jwtotpTokenDTO = new JWTOTPTokenDTO();
                     jwtotpTokenDTO.setUserId(userId);

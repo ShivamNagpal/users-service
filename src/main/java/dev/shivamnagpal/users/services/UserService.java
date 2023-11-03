@@ -24,8 +24,10 @@ public interface UserService {
 
     Future<OTPResponseDTO> updateEmail(JWTAuthTokenDTO jwtAuthTokenDTO, EmailRequestDTO emailRequestDTO);
 
-    Future<LoginResponseDTO> updatePassword(JWTAuthTokenDTO jwtAuthTokenDTO,
-                                            PasswordUpdateRequestDTO passwordUpdateRequestDTO);
+    Future<LoginResponseDTO> updatePassword(
+            JWTAuthTokenDTO jwtAuthTokenDTO,
+            PasswordUpdateRequestDTO passwordUpdateRequestDTO
+    );
 
     Future<OTPResponseDTO> resetPassword(EmailRequestDTO emailRequestDTO);
 

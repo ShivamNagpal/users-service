@@ -10,6 +10,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class JWTOTPTokenDTO {
     private Long userId;
+
     private String email;
+
     private OTPPurpose otpPurpose;
 }

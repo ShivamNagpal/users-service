@@ -33,9 +33,13 @@ import java.util.Set;
 public class JWTServiceImpl implements JWTService {
 
     private final JsonObject config;
+
     private final Algorithm otpSigningAlgorithm;
+
     private final Algorithm authTokenSigningAlgorithm;
+
     private final JWTVerifier otpTokenVerifier;
+
     private final JWTVerifier authTokenVerifier;
 
     public JWTServiceImpl(JsonObject config) {
@@ -64,9 +68,11 @@ public class JWTServiceImpl implements JWTService {
                 .withClaim(Constants.USER_ID, jwtotpTokenDTO.getUserId())
                 .withClaim(Constants.EMAIL, jwtotpTokenDTO.getEmail())
                 .withClaim(Constants.OTP_PURPOSE, jwtotpTokenDTO.getOtpPurpose().toString())
-                .withExpiresAt(UtilMethods.convertLocalDateTimeToDate(
-                        LocalDateTime.now().plusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME))
-                ))
+                .withExpiresAt(
+                        UtilMethods.convertLocalDateTimeToDate(
+                                LocalDateTime.now().plusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME))
+                        )
+                )
                 .withIssuer(Configuration.JWT_ISSUER.getKey())
                 .withIssuedAt(new Date())
                 .sign(otpSigningAlgorithm);
@@ -79,7 +85,8 @@ public class JWTServiceImpl implements JWTService {
             decodedJWT = otpTokenVerifier.verify(otpToken);
         } catch (JWTVerificationException e) {
             return Future.failedFuture(
-                    new ResponseException(HttpResponseStatus.BAD_REQUEST.code(), MessageConstants.INVALID_OTP_TOKEN,
+                    new ResponseException(
+                            HttpResponseStatus.BAD_REQUEST.code(), MessageConstants.INVALID_OTP_TOKEN,
                             null
                     )
             );
@@ -97,9 +104,11 @@ public class JWTServiceImpl implements JWTService {
                 .withClaim(Constants.USER_ID, jwtAuthTokenDTO.getUserId())
                 .withClaim(Constants.SESSION_ID, jwtAuthTokenDTO.getSessionId())
                 .withArrayClaim(Constants.ROLES, jwtAuthTokenDTO.getRoles())
-                .withExpiresAt(UtilMethods.convertLocalDateTimeToDate(
-                        LocalDateTime.now().plusSeconds(config.getInteger(Constants.JWT_EXPIRY_TIME))
-                ))
+                .withExpiresAt(
+                        UtilMethods.convertLocalDateTimeToDate(
+                                LocalDateTime.now().plusSeconds(config.getInteger(Constants.JWT_EXPIRY_TIME))
+                        )
+                )
                 .withIssuer(Configuration.JWT_ISSUER.getKey())
                 .withIssuedAt(new Date())
                 .sign(authTokenSigningAlgorithm);
@@ -112,7 +121,8 @@ public class JWTServiceImpl implements JWTService {
             return Future.succeededFuture();
         } catch (JWTVerificationException e) {
             return Future.failedFuture(
-                    new ResponseException(HttpResponseStatus.BAD_REQUEST.code(), MessageConstants.INVALID_AUTH_TOKEN,
+                    new ResponseException(
+                            HttpResponseStatus.BAD_REQUEST.code(), MessageConstants.INVALID_AUTH_TOKEN,
                             null
                     )
             );
@@ -137,8 +147,11 @@ public class JWTServiceImpl implements JWTService {
                 return Future.succeededFuture();
             }
         }
-        return Future.failedFuture(new ResponseException(HttpResponseStatus.UNAUTHORIZED.code(),
-                MessageConstants.USER_IS_NOT_AUTHORIZED_TO_ACCESS, null
-        ));
+        return Future.failedFuture(
+                new ResponseException(
+                        HttpResponseStatus.UNAUTHORIZED.code(),
+                        MessageConstants.USER_IS_NOT_AUTHORIZED_TO_ACCESS, null
+                )
+        );
     }
 }

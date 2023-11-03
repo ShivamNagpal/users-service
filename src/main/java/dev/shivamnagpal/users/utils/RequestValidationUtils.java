@@ -19,8 +19,12 @@ public class RequestValidationUtils {
     public static Future<JsonObject> fetchBodyAsJson(RoutingContext routingContext) {
         JsonObject bodyAsJson = routingContext.getBodyAsJson();
         if (Objects.isNull(bodyAsJson)) {
-            return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                    MessageConstants.REQUEST_BODY_NOT_PROVIDED, null));
+            return Future.failedFuture(
+                    new ResponseException(
+                            HttpResponseStatus.BAD_REQUEST.code(),
+                            MessageConstants.REQUEST_BODY_NOT_PROVIDED, null
+                    )
+            );
         }
         return Future.succeededFuture(bodyAsJson);
     }
@@ -40,8 +44,12 @@ public class RequestValidationUtils {
     }
 
     public static <T> Future<T> formErrorResponse(Map<String, String> errors) {
-        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                MessageConstants.VALIDATION_ERRORS_IN_THE_REQUEST, JsonObject.mapFrom(errors)));
+        return Future.failedFuture(
+                new ResponseException(
+                        HttpResponseStatus.BAD_REQUEST.code(),
+                        MessageConstants.VALIDATION_ERRORS_IN_THE_REQUEST, JsonObject.mapFrom(errors)
+                )
+        );
     }
 
     public static Future<Boolean> getBooleanQueryParam(HttpServerRequest request, String key) {
@@ -54,9 +62,12 @@ public class RequestValidationUtils {
         } else if (paramVal.equalsIgnoreCase(Constants.FALSE)) {
             return Future.succeededFuture(false);
         }
-        return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                MessageFormat.format(MessageConstants.QUERY_PARAM_MUST_HAVE_ONLY_BOOLEAN_VALUES, key), null
-        ));
+        return Future.failedFuture(
+                new ResponseException(
+                        HttpResponseStatus.BAD_REQUEST.code(),
+                        MessageFormat.format(MessageConstants.QUERY_PARAM_MUST_HAVE_ONLY_BOOLEAN_VALUES, key), null
+                )
+        );
     }
 
     public static Future<Boolean> getBooleanQueryParam(HttpServerRequest request, String key, boolean defaultValue) {

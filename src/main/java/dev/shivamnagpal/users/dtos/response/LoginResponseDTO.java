@@ -9,5 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LoginResponseDTO {
     private String authToken;
+
     private String refreshToken;
 }

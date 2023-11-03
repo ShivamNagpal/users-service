@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 public class DatabaseConfiguration {
     private static final Logger logger = Logger.getLogger(DatabaseConfiguration.class.getName());
+
     private static volatile PgPool pgPool;
 
     private DatabaseConfiguration() {
@@ -44,24 +45,28 @@ public class DatabaseConfiguration {
     }
 
     public static MongoClient getMongoClient(Vertx vertx, JsonObject config) {
-        return MongoClient.createShared(vertx, new JsonObject()
-                .put(Constants.CONNECTION_STRING, config.getString(Configuration.MONGO_CONNECTION_URI.getKey()))
-                .put(Constants.DB_NAME, config.getString(Configuration.MONGO_DATABASE.getKey()))
+        return MongoClient.createShared(
+                vertx,
+                new JsonObject()
+                        .put(Constants.CONNECTION_STRING, config.getString(Configuration.MONGO_CONNECTION_URI.getKey()))
+                        .put(Constants.DB_NAME, config.getString(Configuration.MONGO_DATABASE.getKey()))
         );
     }
 
     public static void initFlyway(JsonObject config) {
-        String jdbcUri = MessageFormat.format(Constants.JDBC_POSTGRESQL_URI,
+        String jdbcUri = MessageFormat.format(
+                Constants.JDBC_POSTGRESQL_URI,
                 config.getString(Configuration.PG_HOST.getKey()),
                 config.getString(Configuration.PG_PORT.getKey()),
                 config.getString(Configuration.PG_DATABASE.getKey())
         );
-        Flyway flyway =
-                Flyway.configure().dataSource(
+        Flyway flyway = Flyway.configure()
+                .dataSource(
                         jdbcUri,
                         config.getString(Configuration.PG_USERNAME.getKey()),
                         config.getString(Configuration.PG_PASSWORD.getKey())
-                ).load();
+                )
+                .load();
         flyway.migrate();
     }
 

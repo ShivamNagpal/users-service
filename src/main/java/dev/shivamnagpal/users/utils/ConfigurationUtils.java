@@ -97,7 +97,9 @@ public class ConfigurationUtils {
     }
 
     private static String[] checkForConfigurationProfiles() {
-        Optional<String> sysProfileFlagOptional = System.getProperties().keySet().stream()
+        Optional<String> sysProfileFlagOptional = System.getProperties()
+                .keySet()
+                .stream()
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
                 .filter(key -> key.equalsIgnoreCase(Configuration.VERTX_PROFILES_ACTIVE.getKey()))
@@ -107,8 +109,11 @@ public class ConfigurationUtils {
             profiles = System.getProperty(sysProfileFlagOptional.get())
                     .split(Constants.PROFILES_SEPARATOR_REGEX_PATTERN);
         } else {
-            Optional<Map.Entry<String, String>> envProfileFlagOptional = System.getenv().entrySet().stream()
-                    .filter(e -> e.getKey().equalsIgnoreCase(Constants.ENV_KEY_VERTX_PROFILES_ACTIVE)).findAny();
+            Optional<Map.Entry<String, String>> envProfileFlagOptional = System.getenv()
+                    .entrySet()
+                    .stream()
+                    .filter(e -> e.getKey().equalsIgnoreCase(Constants.ENV_KEY_VERTX_PROFILES_ACTIVE))
+                    .findAny();
             if (envProfileFlagOptional.isPresent()) {
                 profiles = envProfileFlagOptional.get().getValue().split(Constants.PROFILES_SEPARATOR_REGEX_PATTERN);
             }

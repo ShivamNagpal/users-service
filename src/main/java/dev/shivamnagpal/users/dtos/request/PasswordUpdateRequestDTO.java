@@ -17,6 +17,7 @@ import java.util.HashMap;
 @NoArgsConstructor
 public class PasswordUpdateRequestDTO {
     private String plainPassword;
+
     private String hashedPassword;
 
     public static Future<PasswordUpdateRequestDTO> fromRequest(JsonObject body, JsonObject config) {
@@ -31,9 +32,12 @@ public class PasswordUpdateRequestDTO {
         PasswordUpdateRequestDTO passwordUpdateRequestDTO = new PasswordUpdateRequestDTO();
         String password = body.getString(RequestConstants.PASSWORD);
         passwordUpdateRequestDTO.setPlainPassword(password);
-        passwordUpdateRequestDTO.setHashedPassword(BCrypt.hashpw(password,
-                BCrypt.gensalt(config.getInteger(Constants.BCRYPT_PASSWORD_LOG_ROUNDS))
-        ));
+        passwordUpdateRequestDTO.setHashedPassword(
+                BCrypt.hashpw(
+                        password,
+                        BCrypt.gensalt(config.getInteger(Constants.BCRYPT_PASSWORD_LOG_ROUNDS))
+                )
+        );
 
         return Future.succeededFuture(passwordUpdateRequestDTO);
     }

@@ -13,8 +13,11 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 public class BaseModel {
     private Long id;
+
     private Boolean deleted;
+
     private OffsetDateTime timeCreated;
+
     private OffsetDateTime timeLastModified;
 
     protected static void populateMappingFromRow(BaseModel baseModel, Row row) {
