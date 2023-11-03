@@ -27,8 +27,11 @@ import java.util.logging.Logger;
 public class MainVerticle extends AbstractVerticle {
 
     private static final Logger logger = Logger.getLogger(MainVerticle.class.getName());
+
     private Router mainRouter;
+
     private PgPool pgPool;
+
     private MongoClient mongoClient;
 
     public static Future<String> deploy(Vertx vertx, JsonObject config) {
@@ -36,15 +39,21 @@ public class MainVerticle extends AbstractVerticle {
                 .setInstances(2 * config.getInteger(Constants.AVAILABLE_PROCESSORS))
                 .setConfig(config);
         return vertx.deployVerticle(MainVerticle.class.getName(), httpDeploymentOptions)
-                .onSuccess(result -> logger.log(Level.INFO,
-                        MessageFormat.format(MessageConstants.SERVER_STARTED_ON_PORT,
-                                String.valueOf(config.getInteger(Configuration.SERVER_PORT.getKey())))));
+                .onSuccess(
+                        result -> logger.log(
+                                Level.INFO,
+                                MessageFormat.format(
+                                        MessageConstants.SERVER_STARTED_ON_PORT,
+                                        String.valueOf(config.getInteger(Configuration.SERVER_PORT.getKey()))
+                                )
+                        )
+                );
     }
 
     @Override
     public void start(Promise<Void> startPromise) {
-        String startVerticleMessage =
-                MessageFormat.format(MessageConstants.STARTING_VERTICLE, this.getClass().getSimpleName());
+        String startVerticleMessage = MessageFormat
+                .format(MessageConstants.STARTING_VERTICLE, this.getClass().getSimpleName());
         logger.info(startVerticleMessage);
         JsonObject config = this.config();
         this.setupDBClients(vertx, config)
@@ -61,8 +70,10 @@ public class MainVerticle extends AbstractVerticle {
         pgPool = DatabaseConfiguration.getSqlClient(vertx, config);
         mongoClient = DatabaseConfiguration.getMongoClient(vertx, config);
         HealthDaoImpl healthDao = new HealthDaoImpl();
-        return CompositeFuture.all(healthDao.pgPoolHealthCheck(pgPool),
-                        healthDao.mongoClientHealthCheck(mongoClient))
+        return CompositeFuture.all(
+                healthDao.pgPoolHealthCheck(pgPool),
+                healthDao.mongoClientHealthCheck(mongoClient)
+        )
                 .compose(compositeFuture -> Future.succeededFuture());
     }
 
@@ -94,13 +105,17 @@ public class MainVerticle extends AbstractVerticle {
         UserHelper userHelper = new UserHelper(config, userDao, sessionDao);
 
         HealthService healthService = new HealthServiceImpl(pgPool, mongoClient, healthDao);
-        SessionService sessionService = new SessionServiceImpl(pgPool, mongoClient, config, sessionDao, jwtService,
+        SessionService sessionService = new SessionServiceImpl(
+                pgPool, mongoClient, config, sessionDao, jwtService,
                 userDao, roleDao
         );
         EmailService emailService = new EmailServiceImpl(EmailConfiguration.getMailClient(vertx, config), config);
-        OTPService otpService = new OTPServiceImpl(config, pgPool, mongoClient, otpDao, emailService, sessionService,
-                jwtService, userHelper, userDao, roleDao);
-        UserService userService = new UserServiceImpl(pgPool, mongoClient, userDao, otpService, sessionService, roleDao,
+        OTPService otpService = new OTPServiceImpl(
+                config, pgPool, mongoClient, otpDao, emailService, sessionService,
+                jwtService, userHelper, userDao, roleDao
+        );
+        UserService userService = new UserServiceImpl(
+                pgPool, mongoClient, userDao, otpService, sessionService, roleDao,
                 sessionDao, userHelper
         );
         RoleService roleService = new RoleServiceImpl(pgPool, roleDao, userHelper);

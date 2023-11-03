@@ -9,6 +9,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class JWTAuthTokenDTO {
     private Long userId;
+
     private String sessionId;
+
     private String[] roles;
 }

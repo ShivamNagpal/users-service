@@ -10,6 +10,7 @@ import io.vertx.ext.web.Router;
 
 public class HealthController {
     private final Router router;
+
     private final HealthService healthService;
 
     public HealthController(Vertx vertx, Router mainRouter, HealthService healthService) {
@@ -27,17 +28,25 @@ public class HealthController {
 
     private void appHealth() {
         router.route(RoutingConstants.PATH_SEPARATOR)
-                .handler(routingContext -> routingContext.response().setStatusCode(HttpResponseStatus.OK.code())
-                        .end(Constants.UP)
+                .handler(
+                        routingContext -> routingContext.response()
+                                .setStatusCode(HttpResponseStatus.OK.code())
+                                .end(Constants.UP)
                 );
     }
 
     private void dbHealth() {
         router.route(RoutingConstants.DB)
-                .handler(routingContext -> healthService.checkDbHealth()
-                        .onSuccess(message -> routingContext.response().setStatusCode(HttpResponseStatus.OK.code())
-                                .end(message))
-                        .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response()))
+                .handler(
+                        routingContext -> healthService.checkDbHealth()
+                                .onSuccess(
+                                        message -> routingContext.response()
+                                                .setStatusCode(HttpResponseStatus.OK.code())
+                                                .end(message)
+                                )
+                                .onFailure(
+                                        throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                                )
                 );
     }
 }

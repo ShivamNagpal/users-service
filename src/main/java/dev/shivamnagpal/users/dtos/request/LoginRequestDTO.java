@@ -15,6 +15,7 @@ import java.util.HashMap;
 @NoArgsConstructor
 public class LoginRequestDTO {
     private String email;
+
     private String password;
 
     public static Future<LoginRequestDTO> fromRequest(JsonObject body) {

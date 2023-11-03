@@ -35,9 +35,13 @@ public class PeriodicTasksUtil {
     }
 
     private static void setupDeletionCron(Vertx vertx, JsonObject config, PgPool pgPool, UserHelper userHelper) {
-        vertx.setPeriodic(config.getLong(Constants.DELETION_CRON_DELAY), id -> userHelper.deleteScheduleAccount(pgPool)
-                .onSuccess(v -> logger.log(Level.INFO, MessageConstants.DELETION_CRON_EXECUTED_SUCCESSFULLY))
-                .onFailure(throwable -> logger.log(Level.SEVERE, MessageConstants.DELETION_CRON_FAILED, throwable))
+        vertx.setPeriodic(
+                config.getLong(Constants.DELETION_CRON_DELAY),
+                id -> userHelper.deleteScheduleAccount(pgPool)
+                        .onSuccess(v -> logger.log(Level.INFO, MessageConstants.DELETION_CRON_EXECUTED_SUCCESSFULLY))
+                        .onFailure(
+                                throwable -> logger.log(Level.SEVERE, MessageConstants.DELETION_CRON_FAILED, throwable)
+                        )
         );
     }
 }

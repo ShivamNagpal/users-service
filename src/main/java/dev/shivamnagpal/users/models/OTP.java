@@ -19,11 +19,17 @@ import java.util.List;
 @NoArgsConstructor
 public class OTP extends BaseModel {
     private Long userId;
+
     private String email;
+
     private String otpHash;
+
     private Integer count;
+
     private OffsetDateTime validAfter;
+
     private OTPPurpose purpose;
+
     private OTPStatus otpStatus;
 
     public static OTP fromRow(Row row) {

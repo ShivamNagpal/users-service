@@ -26,16 +26,17 @@ public class Main {
                 .compose(config -> {
                     String[] missingConfigs = ConfigurationUtils.validateMandatoryConfigs(config);
                     if (missingConfigs.length != 0) {
-                        String message =
-                                MessageFormat.format(MessageConstants.MANDATORY_CONFIGS_ARE_NOT_FOUND,
-                                        Arrays.toString(missingConfigs));
+                        String message = MessageFormat.format(
+                                MessageConstants.MANDATORY_CONFIGS_ARE_NOT_FOUND,
+                                Arrays.toString(missingConfigs)
+                        );
                         return Future.failedFuture(new AppException(message));
                     }
                     config.put(Constants.AVAILABLE_PROCESSORS, availableProcessors);
                     return vertx.executeBlocking(promise -> {
-                                DatabaseConfiguration.initFlyway(config);
-                                promise.complete();
-                            })
+                        DatabaseConfiguration.initFlyway(config);
+                        promise.complete();
+                    })
                             .compose(o -> DatabaseConfiguration.verifyMongoIndices(vertx, config))
                             .compose(result -> MainVerticle.deploy(vertx, config))
                             .compose(result -> PeriodicTasksUtil.setupPeriodicTasks(vertx, config));

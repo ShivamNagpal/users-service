@@ -36,9 +36,12 @@ public class VerifyOTPRequestDTO extends PasswordUpdateRequestDTO {
         if (otpPurpose == OTPPurpose.RESET_PASSWORD) {
             String password = body.getString(RequestConstants.PASSWORD);
             verifyOTPRequestDTO.setPlainPassword(password);
-            verifyOTPRequestDTO.setHashedPassword(BCrypt.hashpw(password,
-                    BCrypt.gensalt(config.getInteger(Constants.BCRYPT_PASSWORD_LOG_ROUNDS))
-            ));
+            verifyOTPRequestDTO.setHashedPassword(
+                    BCrypt.hashpw(
+                            password,
+                            BCrypt.gensalt(config.getInteger(Constants.BCRYPT_PASSWORD_LOG_ROUNDS))
+                    )
+            );
         }
 
         return Future.succeededFuture(verifyOTPRequestDTO);

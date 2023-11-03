@@ -15,10 +15,15 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Session extends BaseDocument {
     private Long userId;
+
     private String jwtFingerprint;
+
     private String currentRefreshToken;
+
     private Set<String> usedRefreshTokens;
+
     private SessionStatus status;
+
     private Long expiryTime;
 
     public static Session fromJsonObject(JsonObject jsonObject) {

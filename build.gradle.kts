@@ -5,6 +5,7 @@ plugins {
     java
     application
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.diffplug.spotless") version "6.22.0"
 }
 
 group = "com.nagpal.shivam"
@@ -65,6 +66,15 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+        eclipse("4.29").configFile("spotless.xml")
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 tasks.withType<ShadowJar> {

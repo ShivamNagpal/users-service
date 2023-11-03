@@ -17,9 +17,13 @@ import java.util.stream.Stream;
 @NoArgsConstructor
 public class UserResponseDTO {
     private Long userId;
+
     private String firstName;
+
     private String lastName;
+
     private String email;
+
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> roles;
 
@@ -30,7 +34,9 @@ public class UserResponseDTO {
         userResponseDTO.setLastName(user.getLastName());
         userResponseDTO.setEmail(user.getEmail());
         userResponseDTO.setRoles(
-                Stream.ofNullable(roles).flatMap(Collection::stream).map(role -> role.getRoleName().name())
+                Stream.ofNullable(roles)
+                        .flatMap(Collection::stream)
+                        .map(role -> role.getRoleName().name())
                         .collect(Collectors.toList())
         );
         return userResponseDTO;

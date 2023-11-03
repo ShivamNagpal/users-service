@@ -19,8 +19,12 @@ public class DbUtils {
                 .compose(rs -> Future.succeededFuture());
     }
 
-    public static <R> Future<Optional<R>> executeQueryAndReturnOne(SqlClient sqlClient, String query, Tuple tuple,
-                                                                   Function<Row, R> mapper) {
+    public static <R> Future<Optional<R>> executeQueryAndReturnOne(
+            SqlClient sqlClient,
+            String query,
+            Tuple tuple,
+            Function<Row, R> mapper
+    ) {
         return sqlClient.preparedQuery(query)
                 .execute(tuple)
                 .map(rs -> {
@@ -33,8 +37,12 @@ public class DbUtils {
                 });
     }
 
-    public static <R> Future<List<R>> executeQueryAndReturnMany(SqlClient sqlClient, String query, Tuple tuple,
-                                                                Function<RowSet<Row>, List<R>> mapper) {
+    public static <R> Future<List<R>> executeQueryAndReturnMany(
+            SqlClient sqlClient,
+            String query,
+            Tuple tuple,
+            Function<RowSet<Row>, List<R>> mapper
+    ) {
         return sqlClient.preparedQuery(query)
                 .execute(tuple)
                 .map(mapper);

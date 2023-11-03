@@ -29,54 +29,68 @@ public class SessionDaoImpl implements SessionDao {
 
     @Override
     public Future<Void> updateStatus(MongoClient mongoClient, String id, SessionStatus status) {
-        return mongoClient.updateCollection(Constants.SESSION, new JsonObject().put(DocumentConstants.ID, id),
-                        new JsonObject().put(Constants.DOLLAR_SET, new JsonObject()
+        return mongoClient.updateCollection(
+                Constants.SESSION,
+                new JsonObject().put(DocumentConstants.ID, id),
+                new JsonObject().put(
+                        Constants.DOLLAR_SET,
+                        new JsonObject()
                                 .put(DocumentConstants.STATUS, status)
                                 .put(DocumentConstants.TIME_LAST_MODIFIED, System.currentTimeMillis())
-                        )
                 )
+        )
                 .compose(mongoClientUpdateResult -> Future.succeededFuture());
     }
 
     @Override
     public Future<Void> logoutSession(MongoClient mongoClient, String id) {
-        return mongoClient.updateCollection(Constants.SESSION,
-                        new JsonObject().put(DocumentConstants.ID, id)
-                                .put(DocumentConstants.STATUS, SessionStatus.ACTIVE),
-                        new JsonObject().put(Constants.DOLLAR_SET, new JsonObject()
+        return mongoClient.updateCollection(
+                Constants.SESSION,
+                new JsonObject().put(DocumentConstants.ID, id)
+                        .put(DocumentConstants.STATUS, SessionStatus.ACTIVE),
+                new JsonObject().put(
+                        Constants.DOLLAR_SET,
+                        new JsonObject()
                                 .put(DocumentConstants.STATUS, SessionStatus.CLOSED)
                                 .put(DocumentConstants.TIME_LAST_MODIFIED, System.currentTimeMillis())
-                        )
                 )
+        )
                 .compose(mongoClientUpdateResult -> Future.succeededFuture());
     }
 
     @Override
     public Future<Void> logoutAllSessions(MongoClient mongoClient, Long userId) {
-        return mongoClient.updateCollectionWithOptions(Constants.SESSION,
-                        new JsonObject().put(DocumentConstants.USER_ID, userId)
-                                .put(DocumentConstants.STATUS, SessionStatus.ACTIVE),
-                        new JsonObject().put(Constants.DOLLAR_SET, new JsonObject()
+        return mongoClient.updateCollectionWithOptions(
+                Constants.SESSION,
+                new JsonObject().put(DocumentConstants.USER_ID, userId)
+                        .put(DocumentConstants.STATUS, SessionStatus.ACTIVE),
+                new JsonObject().put(
+                        Constants.DOLLAR_SET,
+                        new JsonObject()
                                 .put(DocumentConstants.STATUS, SessionStatus.CLOSED)
                                 .put(DocumentConstants.TIME_LAST_MODIFIED, System.currentTimeMillis())
-                        ),
-                        new UpdateOptions().setMulti(true)
-                )
+                ),
+                new UpdateOptions().setMulti(true)
+        )
                 .compose(mongoClientUpdateResult -> Future.succeededFuture());
     }
 
     @Override
     public Future<Void> updateRefreshToken(MongoClient mongoClient, Session session) {
-        return mongoClient.updateCollection(Constants.SESSION,
-                        new JsonObject().put(DocumentConstants.ID, session.getId()),
-                        new JsonObject().put(Constants.DOLLAR_SET, new JsonObject()
+        return mongoClient.updateCollection(
+                Constants.SESSION,
+                new JsonObject().put(DocumentConstants.ID, session.getId()),
+                new JsonObject().put(
+                        Constants.DOLLAR_SET,
+                        new JsonObject()
                                 .put(DocumentConstants.CURRENT_REFRESH_TOKEN, session.getCurrentRefreshToken())
-                                .put(DocumentConstants.USED_REFRESH_TOKENS,
+                                .put(
+                                        DocumentConstants.USED_REFRESH_TOKENS,
                                         new JsonArray(new ArrayList<>(session.getUsedRefreshTokens()))
                                 )
                                 .put(DocumentConstants.TIME_LAST_MODIFIED, System.currentTimeMillis())
-                        )
                 )
+        )
                 .compose(mongoClientUpdateResult -> Future.succeededFuture());
     }
 }

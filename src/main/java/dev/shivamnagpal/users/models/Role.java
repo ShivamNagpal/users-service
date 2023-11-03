@@ -17,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Role extends BaseModel {
     private Long userId;
+
     private RoleName roleName;
 
     public static Role fromRow(Row row) {

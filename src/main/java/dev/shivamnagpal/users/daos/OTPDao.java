@@ -9,11 +9,19 @@ import io.vertx.sqlclient.SqlClient;
 import java.util.Optional;
 
 public interface OTPDao {
-    Future<Optional<OTP>> fetchAlreadyTriggeredOTP(SqlClient sqlClient, Long userId, String email,
-                                                   OTPPurpose otpPurpose);
+    Future<Optional<OTP>> fetchAlreadyTriggeredOTP(
+            SqlClient sqlClient,
+            Long userId,
+            String email,
+            OTPPurpose otpPurpose
+    );
 
-    Future<Optional<OTP>> fetchActiveOTP(SqlClient sqlClient, Long userId, String email,
-                                         OTPPurpose otpPurpose);
+    Future<Optional<OTP>> fetchActiveOTP(
+            SqlClient sqlClient,
+            Long userId,
+            String email,
+            OTPPurpose otpPurpose
+    );
 
     Future<Void> update(SqlClient sqlClient, OTP otp);
 

@@ -42,14 +42,21 @@ public class RoleDaoImpl implements RoleDao {
     @Override
     public Future<List<Role>> fetchRolesByUserIdAndDeleted(SqlClient sqlClient, Long userId, boolean deleted) {
         Tuple values = Tuple.of(userId, deleted);
-        return DbUtils.executeQueryAndReturnMany(sqlClient, SELECT_ROLES_BY_USER_ID_AND_DELETED, values,
-                Role::fromRows);
+        return DbUtils.executeQueryAndReturnMany(
+                sqlClient,
+                SELECT_ROLES_BY_USER_ID_AND_DELETED,
+                values,
+                Role::fromRows
+        );
     }
 
     @Override
     public Future<Optional<Role>> fetchRoleByUserIdAndRoleName(SqlClient sqlClient, Long userId, RoleName roleName) {
         Tuple values = Tuple.of(userId, roleName);
-        return DbUtils.executeQueryAndReturnOne(sqlClient, SELECT_ROLES_BY_USER_ID_AND_ROLE_NAME, values,
+        return DbUtils.executeQueryAndReturnOne(
+                sqlClient,
+                SELECT_ROLES_BY_USER_ID_AND_ROLE_NAME,
+                values,
                 Role::fromRow
         );
     }

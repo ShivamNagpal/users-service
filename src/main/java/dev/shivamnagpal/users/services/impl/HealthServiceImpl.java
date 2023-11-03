@@ -14,8 +14,11 @@ import java.util.logging.Logger;
 
 public class HealthServiceImpl implements HealthService {
     private static final Logger logger = Logger.getLogger(HealthServiceImpl.class.getName());
+
     private final PgPool pgPool;
+
     private final MongoClient mongoClient;
+
     private final HealthDao healthDao;
 
     public HealthServiceImpl(PgPool pgPool, MongoClient mongoClient, HealthDao healthDao) {

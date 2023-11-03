@@ -15,6 +15,7 @@ import java.util.HashMap;
 @NoArgsConstructor
 public class UserUpdateRequestDTO {
     private String firstName;
+
     private String lastName;
 
     public static Future<UserUpdateRequestDTO> fromRequest(JsonObject body) {

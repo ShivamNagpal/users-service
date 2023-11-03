@@ -18,14 +18,20 @@ public class AuthenticationUtils {
         }
         String authorizationValue = request.getHeader(Constants.AUTHORIZATION);
         if (authorizationValue == null) {
-            return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                    MessageConstants.AUTHORIZATION_HEADER_NOT_PROVIDED, null
-            ));
+            return Future.failedFuture(
+                    new ResponseException(
+                            HttpResponseStatus.BAD_REQUEST.code(),
+                            MessageConstants.AUTHORIZATION_HEADER_NOT_PROVIDED, null
+                    )
+            );
         }
         if (!authorizationValue.startsWith(Constants.BEARER_SPACE)) {
-            return Future.failedFuture(new ResponseException(HttpResponseStatus.BAD_REQUEST.code(),
-                    MessageConstants.AUTHORIZATION_TOKEN_MUST_START_WITH_THE_BEARER, null
-            ));
+            return Future.failedFuture(
+                    new ResponseException(
+                            HttpResponseStatus.BAD_REQUEST.code(),
+                            MessageConstants.AUTHORIZATION_TOKEN_MUST_START_WITH_THE_BEARER, null
+                    )
+            );
         }
         String authToken = authorizationValue.substring(7);
         return jwtService.verifyAuthToken(authToken);

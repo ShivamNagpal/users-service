@@ -17,11 +17,17 @@ import io.vertx.ext.web.Router;
 
 public class RoleController {
     private final Router router;
+
     private final RoleService roleService;
+
     private final JWTService jwtService;
 
-    public RoleController(Vertx vertx, Router mainRouter, RoleService roleService,
-                          JWTService jwtService) {
+    public RoleController(
+            Vertx vertx,
+            Router mainRouter,
+            RoleService roleService,
+            JWTService jwtService
+    ) {
         this.router = Router.router(vertx);
         this.roleService = roleService;
         this.jwtService = jwtService;
@@ -43,14 +49,18 @@ public class RoleController {
                     jwtService.verifyRoles(jwtAuthTokenDTO, RoleName.ADMIN)
                             .compose(v -> RequestValidationUtils.fetchBodyAsJson(routingContext))
                             .compose(RoleUpdateRequestDTO::fromRequest)
-                            .compose(roleUpdateRequestDTO -> roleService.assignManagerRole(
-                                    roleUpdateRequestDTO.getUserId())
+                            .compose(
+                                    roleUpdateRequestDTO -> roleService.assignManagerRole(
+                                            roleUpdateRequestDTO.getUserId()
+                                    )
                             )
-                            .onSuccess(obj -> routingContext.response()
-                                    .setStatusCode(HttpResponseStatus.OK.code())
-                                    .end(Json.encodePrettily(ResponseWrapper.success(obj)))
+                            .onSuccess(
+                                    obj -> routingContext.response()
+                                            .setStatusCode(HttpResponseStatus.OK.code())
+                                            .end(Json.encodePrettily(ResponseWrapper.success(obj)))
                             )
-                            .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                            .onFailure(
+                                    throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
                             );
                 });
     }
@@ -63,14 +73,18 @@ public class RoleController {
                     jwtService.verifyRoles(jwtAuthTokenDTO, RoleName.ADMIN)
                             .compose(v -> RequestValidationUtils.fetchBodyAsJson(routingContext))
                             .compose(RoleUpdateRequestDTO::fromRequest)
-                            .compose(roleUpdateRequestDTO -> roleService.unAssignManagerRole(
-                                    roleUpdateRequestDTO.getUserId())
+                            .compose(
+                                    roleUpdateRequestDTO -> roleService.unAssignManagerRole(
+                                            roleUpdateRequestDTO.getUserId()
+                                    )
                             )
-                            .onSuccess(obj -> routingContext.response()
-                                    .setStatusCode(HttpResponseStatus.OK.code())
-                                    .end(Json.encodePrettily(ResponseWrapper.success(obj)))
+                            .onSuccess(
+                                    obj -> routingContext.response()
+                                            .setStatusCode(HttpResponseStatus.OK.code())
+                                            .end(Json.encodePrettily(ResponseWrapper.success(obj)))
                             )
-                            .onFailure(throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
+                            .onFailure(
+                                    throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())
                             );
                 });
     }

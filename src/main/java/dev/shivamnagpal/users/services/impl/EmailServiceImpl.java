@@ -13,6 +13,7 @@ import java.text.MessageFormat;
 
 public class EmailServiceImpl implements EmailService {
     private final MailClient mailClient;
+
     private final JsonObject config;
 
     public EmailServiceImpl(MailClient mailClient, JsonObject config) {
