@@ -18,12 +18,12 @@ repositories {
 object Versions {
     const val FLYWAY = "9.22.3"
     const val JACKSON = "2.15.3"
-    const val JAVA_JWT = "3.19.4"
+    const val JAVA_JWT = "4.4.0"
     const val JUNIT_JUPITER = "5.9.1"
     const val LOMBOK = "1.18.30"
     const val POSTGRESQL = "42.6.0"
     const val SCRAM_CLIENT = "2.1"
-    const val SPRING_SECURITY = "5.8.8"
+    const val SPRING_SECURITY = "6.1.5"
     const val VERTX = "4.4.6"
 }
 
