@@ -42,11 +42,13 @@ public class JWTServiceImpl implements JWTService {
 
     private final JWTVerifier authTokenVerifier;
 
+    private final String jwtIssuer;
+
     public JWTServiceImpl(JsonObject config) {
         this.config = config;
         otpSigningAlgorithm = Algorithm.HMAC512(config.getString(Configuration.OTP_SECRET_TOKEN.getKey()));
         authTokenSigningAlgorithm = getRSAAlgorithm();
-        String jwtIssuer = config.getString(Configuration.JWT_ISSUER.getKey());
+        jwtIssuer = config.getString(Configuration.JWT_ISSUER.getKey());
         otpTokenVerifier = JWT.require(otpSigningAlgorithm).withIssuer(jwtIssuer).build();
         authTokenVerifier = JWT.require(authTokenSigningAlgorithm).withIssuer(jwtIssuer).build();
     }
@@ -73,7 +75,7 @@ public class JWTServiceImpl implements JWTService {
                                 LocalDateTime.now().plusSeconds(config.getInteger(Constants.OTP_EXPIRY_TIME))
                         )
                 )
-                .withIssuer(Configuration.JWT_ISSUER.getKey())
+                .withIssuer(jwtIssuer)
                 .withIssuedAt(new Date())
                 .sign(otpSigningAlgorithm);
     }
@@ -109,7 +111,7 @@ public class JWTServiceImpl implements JWTService {
                                 LocalDateTime.now().plusSeconds(config.getInteger(Constants.JWT_EXPIRY_TIME))
                         )
                 )
-                .withIssuer(Configuration.JWT_ISSUER.getKey())
+                .withIssuer(jwtIssuer)
                 .withIssuedAt(new Date())
                 .sign(authTokenSigningAlgorithm);
     }
