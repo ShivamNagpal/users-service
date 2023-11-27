@@ -12,6 +12,7 @@ import io.vertx.sqlclient.Tuple;
 public class HealthDaoImpl implements HealthDao {
 
     public HealthDaoImpl() {
+        // No dependency required for the HealthDaoImpl
     }
 
     @Override

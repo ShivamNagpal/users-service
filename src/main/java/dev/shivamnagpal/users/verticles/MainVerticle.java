@@ -3,6 +3,7 @@ package dev.shivamnagpal.users.verticles;
 import dev.shivamnagpal.users.configurations.DatabaseConfiguration;
 import dev.shivamnagpal.users.configurations.EmailConfiguration;
 import dev.shivamnagpal.users.controllers.*;
+import dev.shivamnagpal.users.core.RequestPath;
 import dev.shivamnagpal.users.enums.Configuration;
 import dev.shivamnagpal.users.exceptions.handlers.GlobalExceptionHandler;
 import dev.shivamnagpal.users.helpers.UserHelper;
@@ -28,7 +29,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private static final Logger logger = Logger.getLogger(MainVerticle.class.getName());
 
-    private Router mainRouter;
+    private Router router;
 
     private PgPool pgPool;
 
@@ -58,9 +59,9 @@ public class MainVerticle extends AbstractVerticle {
         JsonObject config = this.config();
         this.setupDBClients(vertx, config)
                 .compose(v -> this.setupHttpServer(vertx, config))
-                .map(v -> {
+                .compose(v -> {
                     initComponents(config);
-                    return true;
+                    return Future.succeededFuture();
                 })
                 .onSuccess(a -> startPromise.complete())
                 .onFailure(startPromise::fail);
@@ -70,7 +71,7 @@ public class MainVerticle extends AbstractVerticle {
         pgPool = DatabaseConfiguration.getSqlClient(vertx, config);
         mongoClient = DatabaseConfiguration.getMongoClient(vertx, config);
         HealthDaoImpl healthDao = new HealthDaoImpl();
-        return CompositeFuture.all(
+        return Future.all(
                 healthDao.pgPoolHealthCheck(pgPool),
                 healthDao.mongoClientHealthCheck(mongoClient)
         )
@@ -79,9 +80,9 @@ public class MainVerticle extends AbstractVerticle {
 
     private Future<Void> setupHttpServer(Vertx vertx, JsonObject config) {
         Promise<Void> promise = Promise.promise();
-        mainRouter = Router.router(vertx);
+        router = Router.router(vertx);
         vertx.createHttpServer()
-                .requestHandler(mainRouter)
+                .requestHandler(router)
                 .listen(config.getInteger(Configuration.SERVER_PORT.getKey()), http -> {
                     if (http.succeeded()) {
                         promise.complete();
@@ -119,17 +120,17 @@ public class MainVerticle extends AbstractVerticle {
                 sessionDao, userHelper
         );
         RoleService roleService = new RoleServiceImpl(pgPool, roleDao, userHelper);
-
-        new SessionController(vertx, mainRouter, sessionService);
-        new HealthController(vertx, mainRouter, healthService);
-        new OTPController(vertx, config, mainRouter, otpService, jwtService);
-        new UserController(vertx, config, mainRouter, userService, jwtService);
-        new RoleController(vertx, mainRouter, roleService, jwtService);
+        RequestPath requestPath = new RequestPath("");
+        new SessionController(router, requestPath, sessionService);
+        new HealthController(router, requestPath, healthService);
+        new OTPController(router, requestPath, config, otpService, jwtService);
+        new UserController(router, requestPath, config, userService, jwtService);
+        new RoleController(router, requestPath, roleService, jwtService);
     }
 
     private void setupFilters(JWTService jwtService) {
-        mainRouter.route().handler(BodyHandler.create());
-        mainRouter.route().handler(routingContext -> {
+        router.route().handler(BodyHandler.create());
+        router.route().handler(routingContext -> {
             routingContext.response().putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
 
             AuthenticationUtils.authenticate(routingContext.request(), jwtService)

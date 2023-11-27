@@ -20,8 +20,7 @@ public class GlobalExceptionHandler {
 
     public static void handle(Throwable throwable, HttpServerResponse httpServerResponse) {
         logger.log(Level.SEVERE, throwable.getMessage(), throwable);
-        if (throwable instanceof ResponseException) {
-            ResponseException responseException = (ResponseException) throwable;
+        if (throwable instanceof ResponseException responseException) {
             Object responseExceptionPayload = responseException.getPayload();
             if (Objects.nonNull(responseExceptionPayload)) {
                 String message = MessageFormat.format(

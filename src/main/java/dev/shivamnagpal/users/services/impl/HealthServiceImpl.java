@@ -1,10 +1,9 @@
 package dev.shivamnagpal.users.services.impl;
 
 import dev.shivamnagpal.users.daos.HealthDao;
+import dev.shivamnagpal.users.services.HealthService;
 import dev.shivamnagpal.users.utils.Constants;
 import dev.shivamnagpal.users.utils.MessageConstants;
-import dev.shivamnagpal.users.services.HealthService;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgPool;
@@ -39,7 +38,7 @@ public class HealthServiceImpl implements HealthService {
                     logger.log(Level.SEVERE, MessageConstants.MONGO_CLIENT_HEALTH_CHECK_FAILED, throwable);
                     return Future.failedFuture(throwable);
                 });
-        return CompositeFuture.join(sqlClientHealthFuture, mongoClientHealthCheckFuture)
+        return Future.join(sqlClientHealthFuture, mongoClientHealthCheckFuture)
                 .map(Constants.UP)
                 .recover(throwable -> Future.succeededFuture(Constants.DOWN));
     }

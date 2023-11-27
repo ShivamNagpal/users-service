@@ -16,6 +16,7 @@ repositories {
 }
 
 object Versions {
+    const val COMMONS_LANG3 = "3.14.0"
     const val FLYWAY = "9.22.3"
     const val JACKSON = "2.15.3"
     const val JAVA_JWT = "4.4.0"
@@ -56,6 +57,9 @@ dependencies {
     implementation("com.auth0:java-jwt:${Versions.JAVA_JWT}")
     // https://mvnrepository.com/artifact/com.ongres.scram/client
     implementation("com.ongres.scram:client:${Versions.SCRAM_CLIENT}")
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation("org.apache.commons:commons-lang3:${Versions.COMMONS_LANG3}")
+
 
     testImplementation("io.vertx:vertx-junit5:${Versions.VERTX}")
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")

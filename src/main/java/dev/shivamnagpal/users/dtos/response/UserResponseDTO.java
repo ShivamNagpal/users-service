@@ -9,7 +9,6 @@ import lombok.Setter;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Getter
@@ -37,7 +36,7 @@ public class UserResponseDTO {
                 Stream.ofNullable(roles)
                         .flatMap(Collection::stream)
                         .map(role -> role.getRoleName().name())
-                        .collect(Collectors.toList())
+                        .toList()
         );
         return userResponseDTO;
     }
