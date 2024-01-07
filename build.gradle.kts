@@ -25,7 +25,7 @@ object Versions {
     const val POSTGRESQL = "42.6.0"
     const val SCRAM_CLIENT = "2.1"
     const val SPRING_SECURITY = "6.1.5"
-    const val VERTX = "4.4.6"
+    const val VERTX = "4.5.1"
 }
 
 val launcherClassName = "dev.shivamnagpal.users.Main"
@@ -38,11 +38,11 @@ application {
 
 dependencies {
     implementation(platform("io.vertx:vertx-stack-depchain:${Versions.VERTX}"))
-    implementation("io.vertx:vertx-config:${Versions.VERTX}")
-    implementation("io.vertx:vertx-web-validation:${Versions.VERTX}")
-    implementation("io.vertx:vertx-pg-client:${Versions.VERTX}")
-    implementation("io.vertx:vertx-mongo-client:${Versions.VERTX}")
-    implementation("io.vertx:vertx-mail-client:${Versions.VERTX}")
+    implementation("io.vertx:vertx-config")
+    implementation("io.vertx:vertx-web-validation")
+    implementation("io.vertx:vertx-pg-client")
+    implementation("io.vertx:vertx-mongo-client")
+    implementation("io.vertx:vertx-mail-client")
     implementation("com.fasterxml.jackson.core:jackson-databind:${Versions.JACKSON}")
     compileOnly("org.projectlombok:lombok:${Versions.LOMBOK}")
     annotationProcessor("org.projectlombok:lombok:${Versions.LOMBOK}")
@@ -61,15 +61,15 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:${Versions.COMMONS_LANG3}")
 
 
-    testImplementation("io.vertx:vertx-junit5:${Versions.VERTX}")
+    testImplementation("io.vertx:vertx-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")
     testCompileOnly("org.projectlombok:lombok:${Versions.LOMBOK}")
     testAnnotationProcessor("org.projectlombok:lombok:${Versions.LOMBOK}")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 spotless {
