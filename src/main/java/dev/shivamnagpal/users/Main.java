@@ -33,9 +33,9 @@ public class Main {
                         return Future.failedFuture(new AppException(message));
                     }
                     config.put(Constants.AVAILABLE_PROCESSORS, availableProcessors);
-                    return vertx.executeBlocking(promise -> {
+                    return vertx.executeBlocking(() -> {
                         DatabaseConfiguration.initFlyway(config);
-                        promise.complete();
+                        return null;
                     })
                             .compose(o -> DatabaseConfiguration.verifyMongoIndices(vertx, config))
                             .compose(result -> MainVerticle.deploy(vertx, config))

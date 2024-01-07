@@ -1,5 +1,7 @@
 package dev.shivamnagpal.users.controllers;
 
+import dev.shivamnagpal.users.core.Controller;
+import dev.shivamnagpal.users.core.RequestPath;
 import dev.shivamnagpal.users.dtos.internal.JWTAuthTokenDTO;
 import dev.shivamnagpal.users.dtos.internal.UserUpdateRequestDTO;
 import dev.shivamnagpal.users.dtos.request.EmailRequestDTO;
@@ -15,14 +17,12 @@ import dev.shivamnagpal.users.utils.RequestConstants;
 import dev.shivamnagpal.users.utils.RequestValidationUtils;
 import dev.shivamnagpal.users.utils.RoutingConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
-public class UserController {
-    private final Router router;
+public class UserController extends Controller {
 
     private final JsonObject config;
 
@@ -31,22 +31,21 @@ public class UserController {
     private final UserService userService;
 
     public UserController(
-            Vertx vertx,
+            Router router,
+            RequestPath requestPath,
             JsonObject config,
-            Router mainRouter,
             UserService userService,
             JWTService jwtService
     ) {
-        this.router = Router.router(vertx);
+        super(router, requestPath.next(RoutingConstants.USER));
+
         this.config = config;
         this.userService = userService;
         this.jwtService = jwtService;
-        mainRouter.mountSubRouter(RoutingConstants.USER, router);
-
-        setupEndpoints();
     }
 
-    private void setupEndpoints() {
+    @Override
+    public void registerRoutes() {
         signUp();
         login();
         logout();
@@ -61,7 +60,7 @@ public class UserController {
     }
 
     private void signUp() {
-        router.post(RoutingConstants.SIGN_UP)
+        super.router.post(super.requestPath.next(RoutingConstants.SIGN_UP).path())
                 .handler(
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(body -> User.fromRequest(body, config))
@@ -78,7 +77,7 @@ public class UserController {
     }
 
     private void login() {
-        router.post(RoutingConstants.LOGIN)
+        super.router.post(super.requestPath.next(RoutingConstants.LOGIN).path())
                 .handler(
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(LoginRequestDTO::fromRequest)
@@ -102,7 +101,7 @@ public class UserController {
     }
 
     private void logout() {
-        router.post(RoutingConstants.LOGOUT)
+        super.router.post(super.requestPath.next(RoutingConstants.LOGOUT).path())
                 .handler(routingContext -> {
                     HttpServerRequest request = routingContext.request();
                     RequestValidationUtils.getBooleanQueryParam(request, RequestConstants.ALL_SESSIONS, false)
@@ -123,7 +122,7 @@ public class UserController {
     }
 
     private void getById() {
-        router.get(RoutingConstants.ME)
+        super.router.get(super.requestPath.next(RoutingConstants.ME).path())
                 .handler(routingContext -> {
                     HttpServerRequest request = routingContext.request();
                     String authToken = AuthenticationUtils.getAuthToken(request);
@@ -141,7 +140,7 @@ public class UserController {
     }
 
     private void update() {
-        router.put(RoutingConstants.ME)
+        super.router.put(super.requestPath.next(RoutingConstants.ME).path())
                 .handler(
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(UserUpdateRequestDTO::fromRequest)
@@ -163,7 +162,7 @@ public class UserController {
     }
 
     private void updateEmail() {
-        router.patch(RoutingConstants.EMAIL)
+        super.router.patch(super.requestPath.next(RoutingConstants.EMAIL).path())
                 .handler(
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(EmailRequestDTO::fromRequest)
@@ -184,7 +183,7 @@ public class UserController {
     }
 
     private void updatePassword() {
-        router.patch(RoutingConstants.PASSWORD)
+        super.router.patch(super.requestPath.next(RoutingConstants.PASSWORD).path())
                 .handler(
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(body -> PasswordUpdateRequestDTO.fromRequest(body, config))
@@ -205,7 +204,7 @@ public class UserController {
     }
 
     private void resetPassword() {
-        router.post(RoutingConstants.RESET_PASSWORD)
+        super.router.post(super.requestPath.next(RoutingConstants.RESET_PASSWORD).path())
                 .handler(
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(EmailRequestDTO::fromRequest)
@@ -222,7 +221,7 @@ public class UserController {
     }
 
     private void deactivate() {
-        router.post(RoutingConstants.DEACTIVATE)
+        super.router.post(super.requestPath.next(RoutingConstants.DEACTIVATE).path())
                 .handler(routingContext -> {
                     String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
                     JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);
@@ -239,7 +238,7 @@ public class UserController {
     }
 
     private void reactivate() {
-        router.post(RoutingConstants.REACTIVATE)
+        super.router.post(super.requestPath.next(RoutingConstants.REACTIVATE).path())
                 .handler(
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(LoginRequestDTO::fromRequest)
@@ -256,7 +255,7 @@ public class UserController {
     }
 
     private void scheduleForDeletion() {
-        router.delete(RoutingConstants.ME)
+        super.router.delete(super.requestPath.next(RoutingConstants.ME).path())
                 .handler(routingContext -> {
                     String authToken = AuthenticationUtils.getAuthToken(routingContext.request());
                     JWTAuthTokenDTO jwtAuthTokenDTO = jwtService.decodeAuthToken(authToken);

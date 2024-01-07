@@ -17,7 +17,6 @@ import io.vertx.sqlclient.Tuple;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class UserDaoImpl implements UserDao {
     public static final String INSERT_USER = "INSERT INTO \"user\"" +
@@ -66,15 +65,16 @@ public class UserDaoImpl implements UserDao {
         return DbUtils.executeQueryAndReturnOne(sqlClient, INSERT_USER, values, DbUtils::mapRowToId)
                 .map(Optional::get)
                 .recover(throwable -> {
-                    if (throwable instanceof PgException) {
-                        PgException pgException = (PgException) throwable;
-                        if (pgException.getCode().equals(PgExceptionCodes.UNIQUE_KEY_CONSTRAINT_VIOLATION)) {
-                            ResponseException responseException = new ResponseException(
-                                    HttpResponseStatus.BAD_REQUEST.code(),
-                                    "User with " + pgException.getDetail(), null
-                            );
-                            return Future.failedFuture(responseException);
-                        }
+                    if (
+                        throwable instanceof PgException pgException
+                                && pgException.getSqlState().equals(PgExceptionCodes.UNIQUE_KEY_CONSTRAINT_VIOLATION)
+                    ) {
+                        ResponseException responseException = new ResponseException(
+                                HttpResponseStatus.BAD_REQUEST.code(),
+                                "User with " + pgException.getDetail(), null
+                        );
+                        return Future.failedFuture(responseException);
+
                     }
                     return Future.failedFuture(throwable);
                 });
@@ -172,7 +172,7 @@ public class UserDaoImpl implements UserDao {
                                 user.getId()
                         )
                 )
-                .collect(Collectors.toList());
+                .toList();
         return DbUtils.executeBatch(sqlClient, MARK_USER_ACCOUNT_AS_DELETED, tuples);
     }
 }

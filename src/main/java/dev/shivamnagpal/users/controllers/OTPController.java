@@ -1,5 +1,7 @@
 package dev.shivamnagpal.users.controllers;
 
+import dev.shivamnagpal.users.core.Controller;
+import dev.shivamnagpal.users.core.RequestPath;
 import dev.shivamnagpal.users.dtos.request.VerifyOTPRequestDTO;
 import dev.shivamnagpal.users.dtos.response.ResponseWrapper;
 import dev.shivamnagpal.users.exceptions.ResponseException;
@@ -11,14 +13,11 @@ import dev.shivamnagpal.users.utils.MessageConstants;
 import dev.shivamnagpal.users.utils.RequestValidationUtils;
 import dev.shivamnagpal.users.utils.RoutingConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
-public class OTPController {
-    private final Router router;
-
+public class OTPController extends Controller {
     private final JsonObject config;
 
     private final OTPService otpService;
@@ -26,28 +25,26 @@ public class OTPController {
     private final JWTService jwtService;
 
     public OTPController(
-            Vertx vertx,
+            Router router,
+            RequestPath requestPath,
             JsonObject config,
-            Router mainRouter,
             OTPService otpService,
             JWTService jwtService
     ) {
-        this.router = Router.router(vertx);
+        super(router, requestPath.next(RoutingConstants.OTP));
         this.config = config;
         this.jwtService = jwtService;
-        mainRouter.mountSubRouter(RoutingConstants.OTP, router);
         this.otpService = otpService;
-
-        setupEndpoints();
     }
 
-    private void setupEndpoints() {
+    @Override
+    public void registerRoutes() {
         resendOTP();
         verifyOTP();
     }
 
     private void resendOTP() {
-        router.post(RoutingConstants.RESEND_OTP)
+        super.router.post(super.requestPath.next(RoutingConstants.RESEND_OTP).path())
                 .handler(routingContext -> {
                     String otpToken = routingContext.request().getHeader(Constants.OTP_TOKEN);
                     if (otpToken == null) {
@@ -76,7 +73,7 @@ public class OTPController {
     }
 
     private void verifyOTP() {
-        router.post(RoutingConstants.VERIFY_OTP)
+        super.router.post(super.requestPath.next(RoutingConstants.VERIFY_OTP).path())
                 .handler(routingContext -> {
                     String otpToken = routingContext.request().getHeader(Constants.OTP_TOKEN);
                     if (otpToken == null) {

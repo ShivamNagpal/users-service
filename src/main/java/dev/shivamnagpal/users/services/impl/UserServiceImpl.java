@@ -23,7 +23,6 @@ import dev.shivamnagpal.users.services.SessionService;
 import dev.shivamnagpal.users.services.UserService;
 import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgPool;
@@ -169,7 +168,7 @@ public class UserServiceImpl implements UserService {
             Future<User> userFuture = userHelper.getUserById(sqlConnection, jwtAuthTokenDTO.getUserId());
             Future<List<Role>> rolesFuture = roleDao
                     .fetchRolesByUserIdAndDeleted(sqlConnection, jwtAuthTokenDTO.getUserId(), false);
-            return CompositeFuture.all(userFuture, rolesFuture)
+            return Future.all(userFuture, rolesFuture)
                     .map(compositeFuture -> {
                         User user = compositeFuture.resultAt(0);
                         List<Role> roles = compositeFuture.resultAt(1);

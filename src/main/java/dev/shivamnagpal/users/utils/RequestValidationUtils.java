@@ -17,7 +17,7 @@ public class RequestValidationUtils {
     }
 
     public static Future<JsonObject> fetchBodyAsJson(RoutingContext routingContext) {
-        JsonObject bodyAsJson = routingContext.getBodyAsJson();
+        JsonObject bodyAsJson = routingContext.body().asJsonObject();
         if (Objects.isNull(bodyAsJson)) {
             return Future.failedFuture(
                     new ResponseException(
