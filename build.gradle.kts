@@ -21,7 +21,7 @@ object Versions {
     const val JACKSON = "2.15.3"
     const val JAVA_JWT = "4.4.0"
     const val JUNIT_JUPITER = "5.9.1"
-    const val LOGBACK = "1.4.14"
+    const val LOG4J2 = "2.22.1"
     const val LOMBOK = "1.18.30"
     const val POSTGRESQL = "42.6.0"
     const val SCRAM_CLIENT = "2.1"
@@ -61,8 +61,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation("org.apache.commons:commons-lang3:${Versions.COMMONS_LANG3}")
 
-    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation("ch.qos.logback:logback-classic:${Versions.LOGBACK}")
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j2-impl
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:${Versions.LOG4J2}")
 
     testImplementation("io.vertx:vertx-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")
