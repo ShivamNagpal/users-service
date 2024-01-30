@@ -10,14 +10,13 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 
 import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+@Slf4j
 public class DatabaseConfiguration {
-    private static final Logger logger = Logger.getLogger(DatabaseConfiguration.class.getName());
 
     private static volatile PgPool pgPool;
 
@@ -37,7 +36,7 @@ public class DatabaseConfiguration {
                             .setCachePreparedStatements(true);
                     PoolOptions poolOptions = new PoolOptions();
                     pgPool = PgPool.pool(vertx, pgConnectOptions, poolOptions);
-                    logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE);
+                    log.info(MessageConstants.SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE);
                 }
             }
         }

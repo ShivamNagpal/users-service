@@ -9,14 +9,13 @@ import dev.shivamnagpal.users.utils.PeriodicTasksUtil;
 import dev.shivamnagpal.users.verticles.MainVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+@Slf4j
 public class Main {
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
@@ -41,9 +40,9 @@ public class Main {
                             .compose(result -> MainVerticle.deploy(vertx, config))
                             .compose(result -> PeriodicTasksUtil.setupPeriodicTasks(vertx, config));
                 })
-                .onSuccess(result -> logger.log(Level.INFO, MessageConstants.SUCCESSFULLY_DEPLOYED_THE_VERTICLES))
+                .onSuccess(result -> log.info(MessageConstants.SUCCESSFULLY_DEPLOYED_THE_VERTICLES))
                 .onFailure(throwable -> {
-                    logger.log(Level.SEVERE, throwable.getMessage(), throwable);
+                    log.error(throwable.getMessage(), throwable);
                     vertx.close(ar -> System.exit(-1));
                 });
 
@@ -51,7 +50,7 @@ public class Main {
             @Override
             public void run() {
                 super.run();
-                logger.log(Level.INFO, MessageConstants.SHUTTING_DOWN_THE_VERT_X);
+                log.info(MessageConstants.SHUTTING_DOWN_THE_VERT_X);
                 vertx.close();
             }
         });

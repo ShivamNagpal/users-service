@@ -20,14 +20,12 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.pgclient.PgPool;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+@Slf4j
 public class MainVerticle extends AbstractVerticle {
-
-    private static final Logger logger = Logger.getLogger(MainVerticle.class.getName());
 
     private Router router;
 
@@ -41,8 +39,7 @@ public class MainVerticle extends AbstractVerticle {
                 .setConfig(config);
         return vertx.deployVerticle(MainVerticle.class.getName(), httpDeploymentOptions)
                 .onSuccess(
-                        result -> logger.log(
-                                Level.INFO,
+                        result -> log.info(
                                 MessageFormat.format(
                                         MessageConstants.SERVER_STARTED_ON_PORT,
                                         String.valueOf(config.getInteger(Configuration.SERVER_PORT.getKey()))
@@ -55,7 +52,7 @@ public class MainVerticle extends AbstractVerticle {
     public void start(Promise<Void> startPromise) {
         String startVerticleMessage = MessageFormat
                 .format(MessageConstants.STARTING_VERTICLE, this.getClass().getSimpleName());
-        logger.info(startVerticleMessage);
+        log.info(startVerticleMessage);
         JsonObject config = this.config();
         this.setupDBClients(vertx, config)
                 .compose(v -> this.setupHttpServer(vertx, config))
