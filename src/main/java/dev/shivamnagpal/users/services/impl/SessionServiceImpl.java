@@ -11,7 +11,6 @@ import dev.shivamnagpal.users.enums.AccountStatus;
 import dev.shivamnagpal.users.enums.SessionStatus;
 import dev.shivamnagpal.users.exceptions.ResponseException;
 import dev.shivamnagpal.users.models.Session;
-import dev.shivamnagpal.users.models.User;
 import dev.shivamnagpal.users.services.JWTService;
 import dev.shivamnagpal.users.services.SessionService;
 import dev.shivamnagpal.users.utils.Constants;
@@ -59,12 +58,12 @@ public class SessionServiceImpl implements SessionService {
     public Future<SessionPayload> createNewSession(MongoClient mongoClient, Long userId) {
         Session session = Session.newDocument(userId, config);
         return mongoClient.save(Constants.SESSION, JsonObject.mapFrom(session))
-                .map(sessionId -> {
-                    SessionPayload sessionPayload = new SessionPayload();
-                    sessionPayload.setSessionId(sessionId);
-                    sessionPayload.setRefreshToken(session.getCurrentRefreshToken());
-                    return sessionPayload;
-                });
+                .map(
+                        sessionId -> SessionPayload.builder()
+                                .sessionId(sessionId)
+                                .refreshToken(session.getCurrentRefreshToken())
+                                .build()
+                );
     }
 
     @Override
@@ -81,116 +80,132 @@ public class SessionServiceImpl implements SessionService {
     public Future<LoginResponseDTO> refreshSession(RefreshSessionRequestDTO refreshSessionRequestDTO) {
         return SessionPayload.fromRefreshToken(refreshSessionRequestDTO.getRefreshToken())
                 .compose(
-                        sessionPayload -> sessionDao.findById(mongoClient, sessionPayload.getSessionId())
-                                .compose(sessionOptional -> {
-                                    if (sessionOptional.isEmpty()) {
-                                        return Future.failedFuture(
-                                                new ResponseException(
-                                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                                        MessageConstants.INVALID_REFRESH_TOKEN, null
+                        sessionPayload -> sessionDao.findById(mongoClient, sessionPayload.sessionId())
+                                .compose(
+                                        sessionOptional -> sessionOptional.map(Future::succeededFuture)
+                                                .orElseGet(
+                                                        () -> Future.failedFuture(
+                                                                new ResponseException(
+                                                                        HttpResponseStatus.BAD_REQUEST.code(),
+                                                                        MessageConstants.INVALID_REFRESH_TOKEN, null
+                                                                )
+                                                        )
                                                 )
-                                        );
-                                    }
-                                    Session session = sessionOptional.get();
-                                    if (session.getExpiryTime() < System.currentTimeMillis()) {
-                                        return Future.failedFuture(
-                                                new ResponseException(
-                                                        HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                        MessageConstants.SESSION_HAS_EXPIRED, null
-                                                )
-                                        );
-                                    }
-                                    if (session.getStatus() != SessionStatus.ACTIVE) {
-                                        return Future.failedFuture(
-                                                new ResponseException(
-                                                        HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                        MessageConstants.SESSION_IS_NOT_ACTIVE, null
-                                                )
-                                        );
-                                    }
-                                    return pgPool.withTransaction(
-                                            sqlConnection -> userDao.getById(sqlConnection, session.getUserId())
-                                                    .compose(userOptional -> {
-                                                        if (userOptional.isEmpty()) {
-                                                            return Future.failedFuture(
-                                                                    new ResponseException(
-                                                                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                                            MessageConstants.USER_NOT_FOUND, null
-                                                                    )
-                                                            );
-                                                        }
-                                                        User user = userOptional.get();
-                                                        if (user.getAccountStatus() != AccountStatus.ACTIVE) {
-                                                            return Future.failedFuture(
-                                                                    new ResponseException(
-                                                                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                                            MessageConstants.USER_ACCOUNT_IS_NOT_ACTIVE,
-                                                                            null
-                                                                    )
-                                                            );
-                                                        }
-                                                        return Future.succeededFuture();
-                                                    })
-                                                    .compose(
-                                                            obj -> roleDao.fetchRolesByUserIdAndDeleted(
-                                                                    sqlConnection,
-                                                                    session.getUserId(),
-                                                                    false
-                                                            )
-                                                    )
-                                                    .compose(roles -> {
-                                                        if (
-                                                            !session.getCurrentRefreshToken()
-                                                                    .equals(sessionPayload.getRefreshToken())
-                                                        ) {
-                                                            Future<Void> future = Future.succeededFuture();
-                                                            if (
-                                                                session.getUsedRefreshTokens()
-                                                                        .contains(sessionPayload.getRefreshToken())
-                                                            ) {
-                                                                future = sessionDao.updateStatus(
-                                                                        mongoClient,
-                                                                        session.getId(),
-                                                                        SessionStatus.VOID
-                                                                );
-                                                            }
-                                                            return future.compose(
-                                                                    v -> Future.failedFuture(
-                                                                            new ResponseException(
-                                                                                    HttpResponseStatus.BAD_REQUEST
-                                                                                            .code(),
-                                                                                    MessageConstants.INVALID_REFRESH_TOKEN,
-                                                                                    null
-                                                                            )
-                                                                    )
-                                                            );
-                                                        }
-                                                        session.refresh();
-                                                        sessionPayload.setRefreshToken(
-                                                                session.getCurrentRefreshToken()
-                                                        );
-                                                        String[] roleNamesArray = roles.stream()
-                                                                .map(r -> r.getRoleName().name())
-                                                                .toArray(String[]::new);
-                                                        return sessionDao.updateRefreshToken(mongoClient, session)
-                                                                .map(
-                                                                        getLoginResponseDTO(
-                                                                                session.getUserId(),
-                                                                                roleNamesArray,
-                                                                                sessionPayload
+                                )
+                                .compose(
+                                        session -> validateSession(sessionPayload, session)
+                                                .map(session)
+                                )
+                )
+                .compose(
+                        session -> pgPool.withTransaction(
+                                sqlConnection -> userDao.getById(sqlConnection, session.getUserId())
+                                        .compose(
+                                                userOptional -> userOptional.map(Future::succeededFuture)
+                                                        .orElseGet(
+                                                                () -> Future.failedFuture(
+                                                                        new ResponseException(
+                                                                                HttpResponseStatus.NOT_ACCEPTABLE
+                                                                                        .code(),
+                                                                                MessageConstants.USER_NOT_FOUND, null
                                                                         )
-                                                                );
-                                                    })
-                                    );
+                                                                )
+                                                        )
+                                        )
+                                        .compose(user -> {
+                                            if (user.getAccountStatus() != AccountStatus.ACTIVE) {
+                                                return Future.failedFuture(
+                                                        new ResponseException(
+                                                                HttpResponseStatus.NOT_ACCEPTABLE
+                                                                        .code(),
+                                                                MessageConstants.USER_ACCOUNT_IS_NOT_ACTIVE,
+                                                                null
+                                                        )
+                                                );
+                                            }
+                                            return Future.succeededFuture();
+                                        })
+                                        .compose(
+                                                obj -> roleDao.fetchRolesByUserIdAndDeleted(
+                                                        sqlConnection,
+                                                        session.getUserId(),
+                                                        false
+                                                )
+                                        )
+
+                        )
+                                .compose(roles -> {
+                                    session.refresh();
+                                    return sessionDao.updateRefreshToken(mongoClient, session)
+                                            .map(ignored -> {
+                                                SessionPayload sessionPayload = SessionPayload.builder()
+                                                        .sessionId(session.getId())
+                                                        .refreshToken(session.getCurrentRefreshToken())
+                                                        .build();
+
+                                                String[] roleNamesArray = roles.stream()
+                                                        .map(r -> r.getRoleName().name())
+                                                        .toArray(String[]::new);
+                                                return getLoginResponseDTO(
+                                                        session.getUserId(),
+                                                        roleNamesArray,
+                                                        sessionPayload
+                                                );
+                                            });
                                 })
                 );
+    }
+
+    private Future<Void> validateSession(SessionPayload sessionPayload, Session session) {
+        if (session.getExpiryTime() < System.currentTimeMillis()) {
+            return Future.failedFuture(
+                    new ResponseException(
+                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                            MessageConstants.SESSION_HAS_EXPIRED, null
+                    )
+            );
+        }
+        if (session.getStatus() != SessionStatus.ACTIVE) {
+            return Future.failedFuture(
+                    new ResponseException(
+                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
+                            MessageConstants.SESSION_IS_NOT_ACTIVE, null
+                    )
+            );
+        }
+
+        if (!session.getCurrentRefreshToken().equals(sessionPayload.refreshToken())) {
+            Future<Void> future = voidSessionIfReused(sessionPayload, session);
+            return future.compose(
+                    v -> Future.failedFuture(
+                            new ResponseException(
+                                    HttpResponseStatus.BAD_REQUEST
+                                            .code(),
+                                    MessageConstants.INVALID_REFRESH_TOKEN,
+                                    null
+                            )
+                    )
+            );
+        }
+        return Future.succeededFuture();
+    }
+
+    private Future<Void> voidSessionIfReused(SessionPayload sessionPayload, Session session) {
+        if (session.getUsedRefreshTokens().contains(sessionPayload.refreshToken())) {
+            return sessionDao.updateStatus(
+                    mongoClient,
+                    session.getId(),
+                    SessionStatus.VOID
+            );
+        }
+        return Future.succeededFuture();
     }
 
     private LoginResponseDTO getLoginResponseDTO(Long userId, String[] roles, SessionPayload sessionPayload) {
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
         JWTAuthTokenDTO jwtAuthTokenDTO = new JWTAuthTokenDTO();
         jwtAuthTokenDTO.setUserId(userId);
-        jwtAuthTokenDTO.setSessionId(sessionPayload.getSessionId());
+        jwtAuthTokenDTO.setSessionId(sessionPayload.sessionId());
         jwtAuthTokenDTO.setRoles(roles);
 
         loginResponseDTO.setAuthToken(jwtService.generateAuthToken(jwtAuthTokenDTO));

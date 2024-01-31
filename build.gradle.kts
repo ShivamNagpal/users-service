@@ -45,8 +45,6 @@ dependencies {
     implementation("io.vertx:vertx-mongo-client")
     implementation("io.vertx:vertx-mail-client")
     implementation("com.fasterxml.jackson.core:jackson-databind:${Versions.JACKSON}")
-    compileOnly("org.projectlombok:lombok:${Versions.LOMBOK}")
-    annotationProcessor("org.projectlombok:lombok:${Versions.LOMBOK}")
     // https://mvnrepository.com/artifact/org.flywaydb/flyway-core
     implementation("org.flywaydb:flyway-core:${Versions.FLYWAY}")
     // Note: Blocking Driver, included only for Flyway to work
@@ -63,6 +61,10 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j2-impl
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:${Versions.LOG4J2}")
+
+    compileOnly("org.projectlombok:lombok:${Versions.LOMBOK}")
+
+    annotationProcessor("org.projectlombok:lombok:${Versions.LOMBOK}")
 
     testImplementation("io.vertx:vertx-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")
@@ -98,6 +100,8 @@ tasks.withType<Test> {
 
 val installLocalGitHookTaskName = "installLocalGitHook"
 tasks.register<Copy>(installLocalGitHookTaskName) {
+    description = "Setup Local GitHooks on the Developer's machine"
+    group = JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME
     from(".githooks")
     into(".git/hooks")
 }

@@ -19,34 +19,29 @@ import java.text.MessageFormat;
 @Slf4j
 public class DatabaseConfiguration {
 
-    private static volatile Pool pgPool;
+    private static Pool pgPool;
 
     private DatabaseConfiguration() {
     }
 
-    public static Pool getPostgresPool(Vertx vertx, JsonObject config) {
+    public static synchronized Pool getPostgresPool(Vertx vertx, JsonObject config) {
         if (pgPool == null) {
-            synchronized (DatabaseConfiguration.class) {
-                if (pgPool == null) {
-                    PgConnectOptions pgConnectOptions = new PgConnectOptions()
-                            .setHost(config.getString(Configuration.PG_HOST.getKey()))
-                            .setPort(config.getInteger(Configuration.PG_PORT.getKey()))
-                            .setDatabase(config.getString(Configuration.PG_DATABASE.getKey()))
-                            .setUser(config.getString(Configuration.PG_USERNAME.getKey()))
-                            .setPassword(config.getString(Configuration.PG_PASSWORD.getKey()))
-                            .setCachePreparedStatements(true);
-                    PoolOptions poolOptions = new PoolOptions()
-                            .setShared(true)
-                            .setName(Constants.PG_SHARED_POOL);
-                    pgPool = PgBuilder
-                            .pool()
-                            .connectingTo(pgConnectOptions)
-                            .with(poolOptions)
-                            .using(vertx)
-                            .build();
-                    log.info(MessageConstants.SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE);
-                }
-            }
+            PgConnectOptions pgConnectOptions = new PgConnectOptions()
+                    .setHost(config.getString(Configuration.PG_HOST.getKey()))
+                    .setPort(config.getInteger(Configuration.PG_PORT.getKey()))
+                    .setDatabase(config.getString(Configuration.PG_DATABASE.getKey()))
+                    .setUser(config.getString(Configuration.PG_USERNAME.getKey()))
+                    .setPassword(config.getString(Configuration.PG_PASSWORD.getKey()))
+                    .setCachePreparedStatements(true);
+            PoolOptions poolOptions = new PoolOptions()
+                    .setShared(true)
+                    .setName(Constants.PG_SHARED_POOL);
+            pgPool = PgBuilder.pool()
+                    .connectingTo(pgConnectOptions)
+                    .with(poolOptions)
+                    .using(vertx)
+                    .build();
+            log.info(MessageConstants.SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE);
         }
         return pgPool;
     }

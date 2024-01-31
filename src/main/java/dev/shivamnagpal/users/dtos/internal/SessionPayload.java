@@ -5,17 +5,10 @@ import dev.shivamnagpal.users.utils.Constants;
 import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class SessionPayload {
-    private String sessionId;
-
-    private String refreshToken;
+@Builder
+public record SessionPayload(String sessionId, String refreshToken) {
 
     public static Future<SessionPayload> fromRefreshToken(String refreshToken) {
         String[] split = refreshToken.split(Constants.REFRESH_TOKEN_SEPARATOR, 2);
@@ -27,9 +20,10 @@ public class SessionPayload {
                     )
             );
         }
-        SessionPayload sessionPayload = new SessionPayload();
-        sessionPayload.setSessionId(split[0]);
-        sessionPayload.setRefreshToken(split[1]);
+        SessionPayload sessionPayload = SessionPayload.builder()
+                .sessionId(split[0])
+                .refreshToken(split[1])
+                .build();
         return Future.succeededFuture(sessionPayload);
     }
 

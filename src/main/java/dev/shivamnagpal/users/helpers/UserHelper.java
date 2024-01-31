@@ -36,33 +36,33 @@ public class UserHelper {
 
     public Future<User> getUserById(SqlConnection sqlConnection, Long userId) {
         return userDao.getById(sqlConnection, userId)
-                .compose(userOptional -> {
-                    if (userOptional.isEmpty()) {
-                        return Future.failedFuture(
-                                new ResponseException(
-                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                        MessageConstants.USER_NOT_FOUND, null
+                .compose(
+                        userOptional -> userOptional.map(Future::succeededFuture)
+                                .orElseGet(
+                                        () -> Future.failedFuture(
+                                                new ResponseException(
+                                                        HttpResponseStatus.BAD_REQUEST.code(),
+                                                        MessageConstants.USER_NOT_FOUND, null
+                                                )
+                                        )
                                 )
-                        );
-                    }
-                    return Future.succeededFuture(userOptional.get());
-                });
+                );
     }
 
     public Future<User> getUserByEmail(SqlConnection sqlConnection, String email) {
         return userDao.getUserByEmail(sqlConnection, email)
-                .compose(userOptional -> {
-                    if (userOptional.isEmpty()) {
-                        return Future.failedFuture(
-                                new ResponseException(
-                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                        MessageConstants.USER_NOT_FOUND,
-                                        null
+                .compose(
+                        userOptional -> userOptional.map(Future::succeededFuture)
+                                .orElseGet(
+                                        () -> Future.failedFuture(
+                                                new ResponseException(
+                                                        HttpResponseStatus.BAD_REQUEST.code(),
+                                                        MessageConstants.USER_NOT_FOUND,
+                                                        null
+                                                )
+                                        )
                                 )
-                        );
-                    }
-                    return Future.succeededFuture(userOptional.get());
-                });
+                );
     }
 
     public Future<Void> updatePasswordAndLogOutAllSessions(

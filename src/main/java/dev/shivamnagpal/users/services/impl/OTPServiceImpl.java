@@ -24,6 +24,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlClient;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.security.SecureRandom;
@@ -31,6 +32,8 @@ import java.text.MessageFormat;
 import java.time.OffsetDateTime;
 import java.util.Random;
 
+// Temporary fix to fix SonarLint Too Many Constructor Args
+@RequiredArgsConstructor
 public class OTPServiceImpl implements OTPService {
     private final JsonObject config;
 
@@ -52,32 +55,7 @@ public class OTPServiceImpl implements OTPService {
 
     private final RoleDao roleDao;
 
-    private final Random random;
-
-    public OTPServiceImpl(
-            JsonObject config,
-            Pool pgPool,
-            MongoClient mongoClient,
-            OTPDao otpDao,
-            EmailService emailService,
-            SessionService sessionService,
-            JWTService jwtService,
-            UserHelper userHelper,
-            UserDao userDao,
-            RoleDao roleDao
-    ) {
-        this.config = config;
-        this.pgPool = pgPool;
-        this.mongoClient = mongoClient;
-        this.otpDao = otpDao;
-        this.emailService = emailService;
-        this.sessionService = sessionService;
-        this.jwtService = jwtService;
-        this.userHelper = userHelper;
-        this.userDao = userDao;
-        this.roleDao = roleDao;
-        this.random = new SecureRandom();
-    }
+    private final Random random = new SecureRandom();
 
     @Override
     public Future<OTPResponseDTO> resendOTP(JWTOTPTokenDTO jwtotpTokenDTO) {
