@@ -19,7 +19,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.MessageFormat;
@@ -29,7 +29,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private Router router;
 
-    private PgPool pgPool;
+    private Pool pgPool;
 
     private MongoClient mongoClient;
 
@@ -65,7 +65,7 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private Future<Void> setupDBClients(Vertx vertx, JsonObject config) {
-        pgPool = DatabaseConfiguration.getSqlClient(vertx, config);
+        pgPool = DatabaseConfiguration.getPostgresPool(vertx, config);
         mongoClient = DatabaseConfiguration.getMongoClient(vertx, config);
         HealthDaoImpl healthDao = new HealthDaoImpl();
         return Future.all(

@@ -9,16 +9,16 @@ import dev.shivamnagpal.users.services.RoleService;
 import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 
 public class RoleServiceImpl implements RoleService {
-    private final PgPool pgPool;
+    private final Pool pgPool;
 
     private final RoleDao roleDao;
 
     private final UserHelper userHelper;
 
-    public RoleServiceImpl(PgPool pgPool, RoleDao roleDao, UserHelper userHelper) {
+    public RoleServiceImpl(Pool pgPool, RoleDao roleDao, UserHelper userHelper) {
         this.pgPool = pgPool;
         this.roleDao = roleDao;
         this.userHelper = userHelper;

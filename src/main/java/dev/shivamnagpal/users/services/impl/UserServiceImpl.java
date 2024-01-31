@@ -25,14 +25,14 @@ import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
 public class UserServiceImpl implements UserService {
-    private final PgPool pgPool;
+    private final Pool pgPool;
 
     private final MongoClient mongoClient;
 
@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
     private final UserHelper userHelper;
 
     public UserServiceImpl(
-            PgPool pgPool,
+            Pool pgPool,
             MongoClient mongoClient,
             UserDao userDao,
             OTPService otpService,

@@ -20,10 +20,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 
 public class SessionServiceImpl implements SessionService {
-    private final PgPool pgPool;
+    private final Pool pgPool;
 
     private final MongoClient mongoClient;
 
@@ -38,7 +38,7 @@ public class SessionServiceImpl implements SessionService {
     private final RoleDao roleDao;
 
     public SessionServiceImpl(
-            PgPool pgPool,
+            Pool pgPool,
             MongoClient mongoClient,
             JsonObject config,
             SessionDao sessionDao,

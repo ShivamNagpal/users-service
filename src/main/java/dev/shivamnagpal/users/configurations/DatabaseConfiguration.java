@@ -7,8 +7,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
@@ -18,12 +19,12 @@ import java.text.MessageFormat;
 @Slf4j
 public class DatabaseConfiguration {
 
-    private static volatile PgPool pgPool;
+    private static volatile Pool pgPool;
 
     private DatabaseConfiguration() {
     }
 
-    public static PgPool getSqlClient(Vertx vertx, JsonObject config) {
+    public static Pool getPostgresPool(Vertx vertx, JsonObject config) {
         if (pgPool == null) {
             synchronized (DatabaseConfiguration.class) {
                 if (pgPool == null) {
@@ -34,8 +35,15 @@ public class DatabaseConfiguration {
                             .setUser(config.getString(Configuration.PG_USERNAME.getKey()))
                             .setPassword(config.getString(Configuration.PG_PASSWORD.getKey()))
                             .setCachePreparedStatements(true);
-                    PoolOptions poolOptions = new PoolOptions();
-                    pgPool = PgPool.pool(vertx, pgConnectOptions, poolOptions);
+                    PoolOptions poolOptions = new PoolOptions()
+                            .setShared(true)
+                            .setName(Constants.PG_SHARED_POOL);
+                    pgPool = PgBuilder
+                            .pool()
+                            .connectingTo(pgConnectOptions)
+                            .with(poolOptions)
+                            .using(vertx)
+                            .build();
                     log.info(MessageConstants.SUCCESSFULLY_CREATED_SQL_CLIENT_INSTANCE);
                 }
             }

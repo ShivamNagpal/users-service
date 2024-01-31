@@ -22,7 +22,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlClient;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -34,7 +34,7 @@ import java.util.Random;
 public class OTPServiceImpl implements OTPService {
     private final JsonObject config;
 
-    private final PgPool pgPool;
+    private final Pool pgPool;
 
     private final MongoClient mongoClient;
 
@@ -56,7 +56,7 @@ public class OTPServiceImpl implements OTPService {
 
     public OTPServiceImpl(
             JsonObject config,
-            PgPool pgPool,
+            Pool pgPool,
             MongoClient mongoClient,
             OTPDao otpDao,
             EmailService emailService,

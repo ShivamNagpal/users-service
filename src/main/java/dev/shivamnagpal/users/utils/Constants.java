@@ -89,6 +89,8 @@ public class Constants {
 
     public static final String DELETION_CRON_BATCH_SIZE = "deletion.cron.batch.size";
 
+    public static final String PG_SHARED_POOL = "pg-shared-pool";
+
     private Constants() {
     }
 }
