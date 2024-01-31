@@ -10,12 +10,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgPool;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+@Slf4j
 public class PeriodicTasksUtil {
-    private static final Logger logger = Logger.getLogger(PeriodicTasksUtil.class.getName());
 
     private PeriodicTasksUtil() {
     }
@@ -38,9 +36,9 @@ public class PeriodicTasksUtil {
         vertx.setPeriodic(
                 config.getLong(Constants.DELETION_CRON_DELAY),
                 id -> userHelper.deleteScheduleAccount(pgPool)
-                        .onSuccess(v -> logger.log(Level.INFO, MessageConstants.DELETION_CRON_EXECUTED_SUCCESSFULLY))
+                        .onSuccess(v -> log.info(MessageConstants.DELETION_CRON_EXECUTED_SUCCESSFULLY))
                         .onFailure(
-                                throwable -> logger.log(Level.SEVERE, MessageConstants.DELETION_CRON_FAILED, throwable)
+                                throwable -> log.error(MessageConstants.DELETION_CRON_FAILED, throwable)
                         )
         );
     }

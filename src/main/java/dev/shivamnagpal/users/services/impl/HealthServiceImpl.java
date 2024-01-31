@@ -7,12 +7,10 @@ import dev.shivamnagpal.users.utils.MessageConstants;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.pgclient.PgPool;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+@Slf4j
 public class HealthServiceImpl implements HealthService {
-    private static final Logger logger = Logger.getLogger(HealthServiceImpl.class.getName());
 
     private final PgPool pgPool;
 
@@ -30,12 +28,12 @@ public class HealthServiceImpl implements HealthService {
     public Future<String> checkDbHealth() {
         Future<Void> sqlClientHealthFuture = healthDao.pgPoolHealthCheck(pgPool)
                 .recover(throwable -> {
-                    logger.log(Level.SEVERE, MessageConstants.PG_POOL_HEALTH_CHECK_FAILED, throwable);
+                    log.error(MessageConstants.PG_POOL_HEALTH_CHECK_FAILED, throwable);
                     return Future.failedFuture(throwable);
                 });
         Future<Void> mongoClientHealthCheckFuture = healthDao.mongoClientHealthCheck(mongoClient)
                 .recover(throwable -> {
-                    logger.log(Level.SEVERE, MessageConstants.MONGO_CLIENT_HEALTH_CHECK_FAILED, throwable);
+                    log.error(MessageConstants.MONGO_CLIENT_HEALTH_CHECK_FAILED, throwable);
                     return Future.failedFuture(throwable);
                 });
         return Future.join(sqlClientHealthFuture, mongoClientHealthCheckFuture)

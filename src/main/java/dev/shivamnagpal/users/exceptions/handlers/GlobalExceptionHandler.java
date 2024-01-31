@@ -6,20 +6,19 @@ import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.MessageFormat;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+@Slf4j
 public class GlobalExceptionHandler {
-    private static final Logger logger = Logger.getLogger(GlobalExceptionHandler.class.getName());
 
     private GlobalExceptionHandler() {
     }
 
     public static void handle(Throwable throwable, HttpServerResponse httpServerResponse) {
-        logger.log(Level.SEVERE, throwable.getMessage(), throwable);
+        log.error(throwable.getMessage(), throwable);
         if (throwable instanceof ResponseException responseException) {
             Object responseExceptionPayload = responseException.getPayload();
             if (Objects.nonNull(responseExceptionPayload)) {
@@ -27,7 +26,7 @@ public class GlobalExceptionHandler {
                         MessageConstants.RESPONSE_EXCEPTION_PAYLOAD,
                         Json.encodePrettily(responseExceptionPayload)
                 );
-                logger.log(Level.SEVERE, message);
+                log.error(message);
             }
             ResponseWrapper<Object> failureResponseWrapper = ResponseWrapper
                     .failure(responseExceptionPayload, responseException.getMessage());

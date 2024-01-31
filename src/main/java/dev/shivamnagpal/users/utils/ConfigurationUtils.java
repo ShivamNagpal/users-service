@@ -8,15 +8,14 @@ import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.function.UnaryOperator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+@Slf4j
 public class ConfigurationUtils {
-    private static final Logger logger = Logger.getLogger(ConfigurationUtils.class.getName());
 
     private ConfigurationUtils() {
     }
@@ -69,7 +68,7 @@ public class ConfigurationUtils {
         String[] profiles = checkForConfigurationProfiles();
         if (profiles.length != 0) {
             String message = MessageFormat.format(MessageConstants.VERTX_ACTIVE_PROFILES, Arrays.toString(profiles));
-            logger.log(Level.INFO, message);
+            log.info(message);
             for (String profile : profiles) {
                 String path = MessageFormat.format(Constants.CONFIG_PROFILE_JSON_PATH, profile);
                 ConfigStoreOptions configProfileFileOptions = new ConfigStoreOptions()
