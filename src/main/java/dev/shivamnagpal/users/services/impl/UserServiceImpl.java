@@ -25,14 +25,17 @@ import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
+// Temporary fix to fix SonarLint Too Many Constructor Args
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final PgPool pgPool;
+    private final Pool pgPool;
 
     private final MongoClient mongoClient;
 
@@ -47,26 +50,6 @@ public class UserServiceImpl implements UserService {
     private final SessionDao sessionDao;
 
     private final UserHelper userHelper;
-
-    public UserServiceImpl(
-            PgPool pgPool,
-            MongoClient mongoClient,
-            UserDao userDao,
-            OTPService otpService,
-            SessionService sessionService,
-            RoleDao roleDao,
-            SessionDao sessionDao,
-            UserHelper userHelper
-    ) {
-        this.pgPool = pgPool;
-        this.mongoClient = mongoClient;
-        this.userDao = userDao;
-        this.otpService = otpService;
-        this.sessionService = sessionService;
-        this.roleDao = roleDao;
-        this.sessionDao = sessionDao;
-        this.userHelper = userHelper;
-    }
 
     @Override
     public Future<OTPResponseDTO> signUp(User user) {

@@ -14,7 +14,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -36,33 +36,33 @@ public class UserHelper {
 
     public Future<User> getUserById(SqlConnection sqlConnection, Long userId) {
         return userDao.getById(sqlConnection, userId)
-                .compose(userOptional -> {
-                    if (userOptional.isEmpty()) {
-                        return Future.failedFuture(
-                                new ResponseException(
-                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                        MessageConstants.USER_NOT_FOUND, null
+                .compose(
+                        userOptional -> userOptional.map(Future::succeededFuture)
+                                .orElseGet(
+                                        () -> Future.failedFuture(
+                                                new ResponseException(
+                                                        HttpResponseStatus.BAD_REQUEST.code(),
+                                                        MessageConstants.USER_NOT_FOUND, null
+                                                )
+                                        )
                                 )
-                        );
-                    }
-                    return Future.succeededFuture(userOptional.get());
-                });
+                );
     }
 
     public Future<User> getUserByEmail(SqlConnection sqlConnection, String email) {
         return userDao.getUserByEmail(sqlConnection, email)
-                .compose(userOptional -> {
-                    if (userOptional.isEmpty()) {
-                        return Future.failedFuture(
-                                new ResponseException(
-                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                        MessageConstants.USER_NOT_FOUND,
-                                        null
+                .compose(
+                        userOptional -> userOptional.map(Future::succeededFuture)
+                                .orElseGet(
+                                        () -> Future.failedFuture(
+                                                new ResponseException(
+                                                        HttpResponseStatus.BAD_REQUEST.code(),
+                                                        MessageConstants.USER_NOT_FOUND,
+                                                        null
+                                                )
+                                        )
                                 )
-                        );
-                    }
-                    return Future.succeededFuture(userOptional.get());
-                });
+                );
     }
 
     public Future<Void> updatePasswordAndLogOutAllSessions(
@@ -100,7 +100,7 @@ public class UserHelper {
                 .compose(v -> sessionDao.logoutAllSessions(mongoClient, user.getId()));
     }
 
-    public Future<Void> deleteScheduleAccount(PgPool pgPool) {
+    public Future<Void> deleteScheduleAccount(Pool pgPool) {
         return UtilMethods.nonBlockingWhile(
                 () -> deleteScheduleAccountBatch(pgPool),
                 size -> size < config.getInteger(Constants.DELETION_CRON_BATCH_SIZE)
@@ -108,7 +108,7 @@ public class UserHelper {
                 .compose(s -> Future.succeededFuture());
     }
 
-    private Future<Integer> deleteScheduleAccountBatch(PgPool pgPool) {
+    private Future<Integer> deleteScheduleAccountBatch(Pool pgPool) {
         return pgPool.withTransaction(
                 sqlConnection -> userDao.findAccountsScheduledForDeletion(
                         sqlConnection,
