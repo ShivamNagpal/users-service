@@ -7,13 +7,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import dev.shivamnagpal.users.dtos.internal.JWTAuthTokenDTO;
 import dev.shivamnagpal.users.dtos.internal.JWTOTPTokenDTO;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.Configuration;
+import dev.shivamnagpal.users.enums.ErrorCode;
 import dev.shivamnagpal.users.enums.OTPPurpose;
 import dev.shivamnagpal.users.enums.RoleName;
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.services.JWTService;
 import dev.shivamnagpal.users.utils.Constants;
-import dev.shivamnagpal.users.utils.MessageConstants;
 import dev.shivamnagpal.users.utils.UtilMethods;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -87,9 +88,8 @@ public class JWTServiceImpl implements JWTService {
             decodedJWT = otpTokenVerifier.verify(otpToken);
         } catch (JWTVerificationException e) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.BAD_REQUEST.code(), MessageConstants.INVALID_OTP_TOKEN,
-                            null
+                    new RestException(
+                            HttpResponseStatus.BAD_REQUEST, ErrorResponse.from(ErrorCode.INVALID_OTP_TOKEN)
                     )
             );
         }
@@ -123,9 +123,8 @@ public class JWTServiceImpl implements JWTService {
             return Future.succeededFuture();
         } catch (JWTVerificationException e) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.BAD_REQUEST.code(), MessageConstants.INVALID_AUTH_TOKEN,
-                            null
+                    new RestException(
+                            HttpResponseStatus.BAD_REQUEST, ErrorResponse.from(ErrorCode.INVALID_AUTH_TOKEN)
                     )
             );
         }
@@ -150,9 +149,9 @@ public class JWTServiceImpl implements JWTService {
             }
         }
         return Future.failedFuture(
-                new ResponseException(
-                        HttpResponseStatus.UNAUTHORIZED.code(),
-                        MessageConstants.USER_IS_NOT_AUTHORIZED_TO_ACCESS, null
+                new RestException(
+                        HttpResponseStatus.UNAUTHORIZED,
+                        ErrorResponse.from(ErrorCode.USER_IS_NOT_AUTHORIZED_TO_ACCESS)
                 )
         );
     }

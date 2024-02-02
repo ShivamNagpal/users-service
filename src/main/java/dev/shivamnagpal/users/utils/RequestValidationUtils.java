@@ -1,6 +1,8 @@
 package dev.shivamnagpal.users.utils;
 
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
+import dev.shivamnagpal.users.enums.ErrorCode;
+import dev.shivamnagpal.users.exceptions.RestException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
@@ -8,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,9 +23,9 @@ public class RequestValidationUtils {
         JsonObject bodyAsJson = routingContext.body().asJsonObject();
         if (Objects.isNull(bodyAsJson)) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.BAD_REQUEST.code(),
-                            MessageConstants.REQUEST_BODY_NOT_PROVIDED, null
+                    new RestException(
+                            HttpResponseStatus.BAD_REQUEST,
+                            ErrorResponse.from(ErrorCode.REQUEST_BODY_NOT_PROVIDED)
                     )
             );
         }
@@ -44,11 +47,18 @@ public class RequestValidationUtils {
     }
 
     public static <T> Future<T> formErrorResponse(Map<String, String> errors) {
-        return Future.failedFuture(
-                new ResponseException(
-                        HttpResponseStatus.BAD_REQUEST.code(),
-                        MessageConstants.VALIDATION_ERRORS_IN_THE_REQUEST, JsonObject.mapFrom(errors)
+        List<ErrorResponse> errorResponses = errors.entrySet()
+                .stream()
+                .map(
+                        entry -> ErrorResponse.from(
+                                ErrorCode.VALIDATION_ERRORS_IN_THE_REQUEST,
+                                String.format(Constants.VALIDATION_ERROR_FORMAT, entry.getKey(), entry.getValue())
+
+                        )
                 )
+                .toList();
+        return Future.failedFuture(
+                new RestException(HttpResponseStatus.BAD_REQUEST, errorResponses)
         );
     }
 
@@ -63,9 +73,12 @@ public class RequestValidationUtils {
             return Future.succeededFuture(false);
         }
         return Future.failedFuture(
-                new ResponseException(
-                        HttpResponseStatus.BAD_REQUEST.code(),
-                        MessageFormat.format(MessageConstants.QUERY_PARAM_MUST_HAVE_ONLY_BOOLEAN_VALUES, key), null
+                new RestException(
+                        HttpResponseStatus.BAD_REQUEST,
+                        ErrorResponse.from(
+                                ErrorCode.VALIDATION_ERRORS_IN_THE_REQUEST,
+                                MessageFormat.format(MessageConstants.QUERY_PARAM_MUST_HAVE_ONLY_BOOLEAN_VALUES, key)
+                        )
                 )
         );
     }

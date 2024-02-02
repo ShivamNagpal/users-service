@@ -1,6 +1,8 @@
 package dev.shivamnagpal.users.utils;
 
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
+import dev.shivamnagpal.users.enums.ErrorCode;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.services.JWTService;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -19,17 +21,17 @@ public class AuthenticationUtils {
         String authorizationValue = request.getHeader(Constants.AUTHORIZATION);
         if (authorizationValue == null) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.BAD_REQUEST.code(),
-                            MessageConstants.AUTHORIZATION_HEADER_NOT_PROVIDED, null
+                    new RestException(
+                            HttpResponseStatus.BAD_REQUEST,
+                            ErrorResponse.from(ErrorCode.AUTHORIZATION_HEADER_NOT_PROVIDED)
                     )
             );
         }
         if (!authorizationValue.startsWith(Constants.BEARER_SPACE)) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.BAD_REQUEST.code(),
-                            MessageConstants.AUTHORIZATION_TOKEN_MUST_START_WITH_THE_BEARER, null
+                    new RestException(
+                            HttpResponseStatus.BAD_REQUEST,
+                            ErrorResponse.from(ErrorCode.AUTHORIZATION_TOKEN_MUST_START_WITH_THE_BEARER)
                     )
             );
         }

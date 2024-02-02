@@ -1,12 +1,13 @@
 package dev.shivamnagpal.users.services.impl;
 
 import dev.shivamnagpal.users.daos.RoleDao;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
+import dev.shivamnagpal.users.enums.ErrorCode;
 import dev.shivamnagpal.users.enums.RoleName;
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.helpers.UserHelper;
 import dev.shivamnagpal.users.models.Role;
 import dev.shivamnagpal.users.services.RoleService;
-import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.Pool;
@@ -37,9 +38,9 @@ public class RoleServiceImpl implements RoleService {
                             Role role = roleOptional.get();
                             if (role.getDeleted() != null && !role.getDeleted()) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.BAD_REQUEST.code(),
-                                                MessageConstants.USER_IS_ALREADY_A_MANAGER, null
+                                        new RestException(
+                                                HttpResponseStatus.BAD_REQUEST,
+                                                ErrorResponse.from(ErrorCode.USER_IS_ALREADY_A_MANAGER)
                                         )
                                 );
                             }
@@ -56,18 +57,18 @@ public class RoleServiceImpl implements RoleService {
                         .compose(roleOptional -> {
                             if (roleOptional.isEmpty()) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.BAD_REQUEST.code(),
-                                                MessageConstants.USER_IS_NOT_A_MANAGER, null
+                                        new RestException(
+                                                HttpResponseStatus.BAD_REQUEST,
+                                                ErrorResponse.from(ErrorCode.USER_IS_NOT_A_MANAGER)
                                         )
                                 );
                             }
                             Role role = roleOptional.get();
                             if (role.getDeleted() != null && role.getDeleted()) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.BAD_REQUEST.code(),
-                                                MessageConstants.USER_IS_NOT_A_MANAGER, null
+                                        new RestException(
+                                                HttpResponseStatus.BAD_REQUEST,
+                                                ErrorResponse.from(ErrorCode.USER_IS_NOT_A_MANAGER)
                                         )
                                 );
                             }

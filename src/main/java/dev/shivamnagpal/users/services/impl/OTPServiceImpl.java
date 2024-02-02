@@ -6,10 +6,12 @@ import dev.shivamnagpal.users.daos.UserDao;
 import dev.shivamnagpal.users.dtos.internal.JWTOTPTokenDTO;
 import dev.shivamnagpal.users.dtos.request.VerifyOTPRequestDTO;
 import dev.shivamnagpal.users.dtos.response.OTPResponseDTO;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
+import dev.shivamnagpal.users.enums.ErrorCode;
 import dev.shivamnagpal.users.enums.OTPPurpose;
 import dev.shivamnagpal.users.enums.OTPStatus;
 import dev.shivamnagpal.users.enums.RoleName;
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.helpers.UserHelper;
 import dev.shivamnagpal.users.models.OTP;
 import dev.shivamnagpal.users.services.EmailService;
@@ -84,18 +86,18 @@ public class OTPServiceImpl implements OTPService {
                         .compose(otpOptional -> {
                             if (otpOptional.isEmpty()) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                MessageConstants.NO_ACTIVE_TRIGGERED_OTP_FOUND, null
+                                        new RestException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                ErrorResponse.from(ErrorCode.NO_ACTIVE_TRIGGERED_OTP_FOUND)
                                         )
                                 );
                             }
                             OTP otp = otpOptional.get();
                             if (!BCrypt.checkpw(String.valueOf(verifyOTPRequestDTO.getOtp()), otp.getOtpHash())) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                MessageConstants.INCORRECT_OTP, null
+                                        new RestException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                ErrorResponse.from(ErrorCode.INCORRECT_OTP)
                                         )
                                 );
                             }
@@ -200,9 +202,9 @@ public class OTPServiceImpl implements OTPService {
                             }
                             return future.compose(
                                     v -> Future.failedFuture(
-                                            new ResponseException(
-                                                    HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                    MessageConstants.OTP_RESEND_LIMIT_EXCEEDED, null
+                                            new RestException(
+                                                    HttpResponseStatus.NOT_ACCEPTABLE,
+                                                    ErrorResponse.from(ErrorCode.OTP_RESEND_LIMIT_EXCEEDED)
                                             )
                                     )
                             );
