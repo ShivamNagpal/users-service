@@ -3,11 +3,12 @@ package dev.shivamnagpal.users.helpers;
 import dev.shivamnagpal.users.daos.SessionDao;
 import dev.shivamnagpal.users.daos.UserDao;
 import dev.shivamnagpal.users.dtos.request.PasswordUpdateRequestDTO;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.AccountStatus;
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.enums.ErrorCode;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.models.User;
 import dev.shivamnagpal.users.utils.Constants;
-import dev.shivamnagpal.users.utils.MessageConstants;
 import dev.shivamnagpal.users.utils.ModelConstants;
 import dev.shivamnagpal.users.utils.UtilMethods;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -40,9 +41,9 @@ public class UserHelper {
                         userOptional -> userOptional.map(Future::succeededFuture)
                                 .orElseGet(
                                         () -> Future.failedFuture(
-                                                new ResponseException(
-                                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                                        MessageConstants.USER_NOT_FOUND, null
+                                                new RestException(
+                                                        HttpResponseStatus.BAD_REQUEST,
+                                                        ErrorResponse.from(ErrorCode.USER_NOT_FOUND)
                                                 )
                                         )
                                 )
@@ -55,10 +56,9 @@ public class UserHelper {
                         userOptional -> userOptional.map(Future::succeededFuture)
                                 .orElseGet(
                                         () -> Future.failedFuture(
-                                                new ResponseException(
-                                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                                        MessageConstants.USER_NOT_FOUND,
-                                                        null
+                                                new RestException(
+                                                        HttpResponseStatus.BAD_REQUEST,
+                                                        ErrorResponse.from(ErrorCode.USER_NOT_FOUND)
                                                 )
                                         )
                                 )
@@ -90,9 +90,9 @@ public class UserHelper {
     ) {
         if (BCrypt.checkpw(passwordUpdateRequestDTO.getPlainPassword(), user.getPassword())) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                            MessageConstants.NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD, null
+                    new RestException(
+                            HttpResponseStatus.NOT_ACCEPTABLE,
+                            ErrorResponse.from(ErrorCode.NEW_PASSWORD_CANNOT_BE_SAME_AS_THE_OLD_PASSWORD)
                     )
             );
         }

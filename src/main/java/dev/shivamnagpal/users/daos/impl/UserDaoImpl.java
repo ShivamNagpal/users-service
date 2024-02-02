@@ -1,8 +1,10 @@
 package dev.shivamnagpal.users.daos.impl;
 
 import dev.shivamnagpal.users.daos.UserDao;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.AccountStatus;
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.enums.ErrorCode;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.models.User;
 import dev.shivamnagpal.users.utils.Constants;
 import dev.shivamnagpal.users.utils.DbUtils;
@@ -69,11 +71,12 @@ public class UserDaoImpl implements UserDao {
                         throwable instanceof PgException pgException
                                 && pgException.getSqlState().equals(PgExceptionCodes.UNIQUE_KEY_CONSTRAINT_VIOLATION)
                     ) {
-                        ResponseException responseException = new ResponseException(
-                                HttpResponseStatus.BAD_REQUEST.code(),
-                                "User with " + pgException.getDetail(), null
+                        RestException restException = new RestException(
+                                HttpResponseStatus.BAD_REQUEST,
+                                ErrorResponse
+                                        .from(ErrorCode.USER_ALREADY_EXISTS, "User with " + pgException.getDetail())
                         );
-                        return Future.failedFuture(responseException);
+                        return Future.failedFuture(restException);
 
                     }
                     return Future.failedFuture(throwable);

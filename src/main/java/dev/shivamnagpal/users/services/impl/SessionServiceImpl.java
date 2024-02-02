@@ -7,14 +7,15 @@ import dev.shivamnagpal.users.dtos.internal.JWTAuthTokenDTO;
 import dev.shivamnagpal.users.dtos.internal.SessionPayload;
 import dev.shivamnagpal.users.dtos.request.RefreshSessionRequestDTO;
 import dev.shivamnagpal.users.dtos.response.LoginResponseDTO;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.AccountStatus;
+import dev.shivamnagpal.users.enums.ErrorCode;
 import dev.shivamnagpal.users.enums.SessionStatus;
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.models.Session;
 import dev.shivamnagpal.users.services.JWTService;
 import dev.shivamnagpal.users.services.SessionService;
 import dev.shivamnagpal.users.utils.Constants;
-import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -85,9 +86,10 @@ public class SessionServiceImpl implements SessionService {
                                         sessionOptional -> sessionOptional.map(Future::succeededFuture)
                                                 .orElseGet(
                                                         () -> Future.failedFuture(
-                                                                new ResponseException(
-                                                                        HttpResponseStatus.BAD_REQUEST.code(),
-                                                                        MessageConstants.INVALID_REFRESH_TOKEN, null
+                                                                new RestException(
+                                                                        HttpResponseStatus.BAD_REQUEST,
+                                                                        ErrorResponse
+                                                                                .from(ErrorCode.INVALID_REFRESH_TOKEN)
                                                                 )
                                                         )
                                                 )
@@ -104,10 +106,10 @@ public class SessionServiceImpl implements SessionService {
                                                 userOptional -> userOptional.map(Future::succeededFuture)
                                                         .orElseGet(
                                                                 () -> Future.failedFuture(
-                                                                        new ResponseException(
-                                                                                HttpResponseStatus.NOT_ACCEPTABLE
-                                                                                        .code(),
-                                                                                MessageConstants.USER_NOT_FOUND, null
+                                                                        new RestException(
+                                                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                                                ErrorResponse
+                                                                                        .from(ErrorCode.USER_NOT_FOUND)
                                                                         )
                                                                 )
                                                         )
@@ -115,11 +117,9 @@ public class SessionServiceImpl implements SessionService {
                                         .compose(user -> {
                                             if (user.getAccountStatus() != AccountStatus.ACTIVE) {
                                                 return Future.failedFuture(
-                                                        new ResponseException(
-                                                                HttpResponseStatus.NOT_ACCEPTABLE
-                                                                        .code(),
-                                                                MessageConstants.USER_ACCOUNT_IS_NOT_ACTIVE,
-                                                                null
+                                                        new RestException(
+                                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                                ErrorResponse.from(ErrorCode.USER_ACCOUNT_IS_NOT_ACTIVE)
                                                         )
                                                 );
                                             }
@@ -159,17 +159,17 @@ public class SessionServiceImpl implements SessionService {
     private Future<Void> validateSession(SessionPayload sessionPayload, Session session) {
         if (session.getExpiryTime() < System.currentTimeMillis()) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                            MessageConstants.SESSION_HAS_EXPIRED, null
+                    new RestException(
+                            HttpResponseStatus.NOT_ACCEPTABLE,
+                            ErrorResponse.from(ErrorCode.SESSION_HAS_EXPIRED)
                     )
             );
         }
         if (session.getStatus() != SessionStatus.ACTIVE) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                            MessageConstants.SESSION_IS_NOT_ACTIVE, null
+                    new RestException(
+                            HttpResponseStatus.NOT_ACCEPTABLE,
+                            ErrorResponse.from(ErrorCode.SESSION_IS_NOT_ACTIVE)
                     )
             );
         }
@@ -178,11 +178,9 @@ public class SessionServiceImpl implements SessionService {
             Future<Void> future = voidSessionIfReused(sessionPayload, session);
             return future.compose(
                     v -> Future.failedFuture(
-                            new ResponseException(
-                                    HttpResponseStatus.BAD_REQUEST
-                                            .code(),
-                                    MessageConstants.INVALID_REFRESH_TOKEN,
-                                    null
+                            new RestException(
+                                    HttpResponseStatus.BAD_REQUEST,
+                                    ErrorResponse.from(ErrorCode.INVALID_REFRESH_TOKEN)
                             )
                     )
             );

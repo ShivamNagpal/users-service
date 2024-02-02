@@ -12,9 +12,11 @@ import dev.shivamnagpal.users.dtos.response.LoginResponseDTO;
 import dev.shivamnagpal.users.dtos.response.OTPResponseDTO;
 import dev.shivamnagpal.users.dtos.response.ResponseWrapper;
 import dev.shivamnagpal.users.dtos.response.UserResponseDTO;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.AccountStatus;
+import dev.shivamnagpal.users.enums.ErrorCode;
 import dev.shivamnagpal.users.enums.OTPPurpose;
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.helpers.UserHelper;
 import dev.shivamnagpal.users.models.Role;
 import dev.shivamnagpal.users.models.User;
@@ -88,10 +90,9 @@ public class UserServiceImpl implements UserService {
                         .compose(user -> {
                             if (!BCrypt.checkpw(loginRequestDTO.getPassword(), user.getPassword())) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                MessageConstants.INVALID_CREDENTIALS,
-                                                null
+                                        new RestException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                ErrorResponse.from(ErrorCode.INVALID_CREDENTIALS)
                                         )
                                 );
                             }
@@ -113,10 +114,9 @@ public class UserServiceImpl implements UserService {
                             }
                             if (user.getAccountStatus() != AccountStatus.ACTIVE) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                MessageConstants.USER_ACCOUNT_IS_NOT_ACTIVE,
-                                                null
+                                        new RestException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                ErrorResponse.from(ErrorCode.USER_ACCOUNT_IS_NOT_ACTIVE)
                                         )
                                 );
                             }
@@ -189,9 +189,9 @@ public class UserServiceImpl implements UserService {
                         .compose(user -> {
                             if (user.getEmail().equals(emailRequestDTO.getEmail())) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                MessageConstants.NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL, null
+                                        new RestException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                ErrorResponse.from(ErrorCode.NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL)
                                         )
                                 );
                             }
@@ -280,10 +280,9 @@ public class UserServiceImpl implements UserService {
                         .compose(user -> {
                             if (!BCrypt.checkpw(loginRequestDTO.getPassword(), user.getPassword())) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                MessageConstants.INVALID_CREDENTIALS,
-                                                null
+                                        new RestException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                ErrorResponse.from(ErrorCode.INVALID_CREDENTIALS)
                                         )
                                 );
                             }
@@ -292,10 +291,11 @@ public class UserServiceImpl implements UserService {
                                         user.getAccountStatus() != AccountStatus.SCHEDULED_FOR_DELETION
                             ) {
                                 return Future.failedFuture(
-                                        new ResponseException(
-                                                HttpResponseStatus.NOT_ACCEPTABLE.code(),
-                                                MessageConstants.USER_ACCOUNT_WASN_T_DEACTIVATED_OR_MARKED_FOR_DELETION,
-                                                null
+                                        new RestException(
+                                                HttpResponseStatus.NOT_ACCEPTABLE,
+                                                ErrorResponse.from(
+                                                        ErrorCode.USER_ACCOUNT_WASN_T_DEACTIVATED_OR_MARKED_FOR_DELETION
+                                                )
                                         )
                                 );
                             }

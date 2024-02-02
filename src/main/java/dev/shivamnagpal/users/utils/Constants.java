@@ -91,6 +91,10 @@ public class Constants {
 
     public static final String PG_SHARED_POOL = "pg-shared-pool";
 
+    public static final String ERROR_CODE_PREFIX = "US-E-";
+
+    public static final String VALIDATION_ERROR_FORMAT = "%s: %s";
+
     private Constants() {
     }
 }

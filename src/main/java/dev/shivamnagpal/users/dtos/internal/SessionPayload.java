@@ -1,11 +1,12 @@
 package dev.shivamnagpal.users.dtos.internal;
 
-import dev.shivamnagpal.users.exceptions.ResponseException;
+import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
+import dev.shivamnagpal.users.enums.ErrorCode;
+import dev.shivamnagpal.users.exceptions.RestException;
 import dev.shivamnagpal.users.utils.Constants;
-import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import lombok.*;
+import lombok.Builder;
 
 @Builder
 public record SessionPayload(String sessionId, String refreshToken) {
@@ -14,9 +15,9 @@ public record SessionPayload(String sessionId, String refreshToken) {
         String[] split = refreshToken.split(Constants.REFRESH_TOKEN_SEPARATOR, 2);
         if (split.length != 2) {
             return Future.failedFuture(
-                    new ResponseException(
-                            HttpResponseStatus.BAD_REQUEST.code(),
-                            MessageConstants.INVALID_REFRESH_TOKEN, null
+                    new RestException(
+                            HttpResponseStatus.BAD_REQUEST,
+                            ErrorResponse.from(ErrorCode.INVALID_REFRESH_TOKEN)
                     )
             );
         }
