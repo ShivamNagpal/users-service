@@ -82,17 +82,10 @@ public class UserController extends Controller {
                         routingContext -> RequestValidationUtils.fetchBodyAsJson(routingContext)
                                 .compose(LoginRequestDTO::fromRequest)
                                 .compose(userService::login)
-                                .onSuccess(obj -> {
-                                    Object responseWrapper;
-                                    if (obj instanceof ResponseWrapper) {
-                                        responseWrapper = obj;
-                                    } else {
-                                        responseWrapper = ResponseWrapper.success(obj);
-                                    }
-                                    routingContext.response()
-                                            .setStatusCode(HttpResponseStatus.OK.code())
-                                            .end(Json.encodePrettily(responseWrapper));
-                                }
+                                .onSuccess(
+                                        loginResponseDTO -> routingContext.response()
+                                                .setStatusCode(HttpResponseStatus.OK.code())
+                                                .end(Json.encodePrettily(ResponseWrapper.success(loginResponseDTO)))
                                 )
                                 .onFailure(
                                         throwable -> GlobalExceptionHandler.handle(throwable, routingContext.response())

@@ -29,7 +29,10 @@ public enum ErrorCode {
     NEW_EMAIL_CANNOT_BE_SAME_AS_THE_OLD_EMAIL("022", "New email cannot be same as the old email"),
     USER_ACCOUNT_WASN_T_DEACTIVATED_OR_MARKED_FOR_DELETION(
             "023", "User account wasn't deactivated or marked for deletion"
-    );
+    ),
+    USER_ACCOUNT_IS_UNVERIFIED("024", "User account is unverified"),
+    INTERNAL_SERVER_ERROR("025", "Internal Server Error"),
+    ;
 
     private final String code;
 

@@ -10,7 +10,6 @@ import dev.shivamnagpal.users.dtos.request.LoginRequestDTO;
 import dev.shivamnagpal.users.dtos.request.PasswordUpdateRequestDTO;
 import dev.shivamnagpal.users.dtos.response.LoginResponseDTO;
 import dev.shivamnagpal.users.dtos.response.OTPResponseDTO;
-import dev.shivamnagpal.users.dtos.response.ResponseWrapper;
 import dev.shivamnagpal.users.dtos.response.UserResponseDTO;
 import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.AccountStatus;
@@ -23,9 +22,9 @@ import dev.shivamnagpal.users.models.User;
 import dev.shivamnagpal.users.services.OTPService;
 import dev.shivamnagpal.users.services.SessionService;
 import dev.shivamnagpal.users.services.UserService;
-import dev.shivamnagpal.users.utils.MessageConstants;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
+import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.sqlclient.Pool;
 import lombok.RequiredArgsConstructor;
@@ -81,7 +80,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Future<Object> login(LoginRequestDTO loginRequestDTO) {
+    public Future<LoginResponseDTO> login(LoginRequestDTO loginRequestDTO) {
         return pgPool.withTransaction(
                 sqlConnection -> userHelper.getUserByEmail(
                         sqlConnection,
@@ -103,13 +102,28 @@ public class UserServiceImpl implements UserService {
                                         user.getEmail(),
                                         OTPPurpose.VERIFY_USER
                                 )
-                                        .map(otpToken -> {
+                                        .compose(otpToken -> {
                                             OTPResponseDTO otpResponseDTO = new OTPResponseDTO();
                                             otpResponseDTO.setOtpToken(otpToken);
-                                            return ResponseWrapper.failure(
-                                                    otpResponseDTO,
-                                                    MessageConstants.USER_ACCOUNT_IS_UNVERIFIED
-                                            );
+                                            return sqlConnection.transaction()
+                                                    .commit()
+                                                    .compose(
+                                                            unused -> {
+                                                                RestException exception = new RestException(
+                                                                        HttpResponseStatus.FORBIDDEN,
+                                                                        ErrorResponse.from(
+                                                                                ErrorCode.USER_ACCOUNT_IS_UNVERIFIED
+                                                                        )
+                                                                );
+                                                                exception.setPayload(
+                                                                        DatabindCodec.mapper()
+                                                                                .valueToTree(otpResponseDTO)
+                                                                );
+                                                                return Future.failedFuture(
+                                                                        exception
+                                                                );
+                                                            }
+                                                    );
                                         });
                             }
                             if (user.getAccountStatus() != AccountStatus.ACTIVE) {

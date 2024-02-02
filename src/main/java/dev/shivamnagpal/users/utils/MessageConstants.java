@@ -39,6 +39,8 @@ public class MessageConstants {
 
     public static final String DELETION_CRON_EXECUTED_SUCCESSFULLY = "Deletion Cron executed successfully";
 
+    public static final String REST_EXCEPTION_THROWN = "Rest Exception Thrown";
+
     private MessageConstants() {
     }
 }
