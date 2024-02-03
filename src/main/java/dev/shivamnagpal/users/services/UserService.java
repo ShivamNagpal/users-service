@@ -14,7 +14,7 @@ import io.vertx.core.Future;
 public interface UserService {
     Future<OTPResponseDTO> signUp(User user);
 
-    Future<Object> login(LoginRequestDTO loginRequestDTO);
+    Future<LoginResponseDTO> login(LoginRequestDTO loginRequestDTO);
 
     Future<Void> logout(JWTAuthTokenDTO jwtAuthTokenDTO, boolean allSession);
 

@@ -5,9 +5,11 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.Serializable;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class ErrorResponse {
+public class ErrorResponse implements Serializable {
 
     private final String errorCode;
 

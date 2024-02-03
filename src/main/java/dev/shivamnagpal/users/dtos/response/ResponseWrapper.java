@@ -30,13 +30,12 @@ public class ResponseWrapper<T> {
         return success(payload, null);
     }
 
-    @Deprecated
-    public static <T> ResponseWrapper<T> failure(T payload, String message) {
-        return new ResponseWrapper<>(null, false, payload, message);
+    public static <T> ResponseWrapper<T> failure(List<ErrorResponse> errors) {
+        return failure(errors, null);
     }
 
-    public static <T> ResponseWrapper<T> failure(List<ErrorResponse> errors) {
-        return new ResponseWrapper<>(errors, false, null, null);
+    public static <T> ResponseWrapper<T> failure(List<ErrorResponse> errors, T payload) {
+        return new ResponseWrapper<>(errors, false, payload, null);
     }
 
 }
