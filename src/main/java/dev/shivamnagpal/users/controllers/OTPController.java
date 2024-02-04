@@ -3,7 +3,7 @@ package dev.shivamnagpal.users.controllers;
 import dev.shivamnagpal.users.core.Controller;
 import dev.shivamnagpal.users.core.RequestPath;
 import dev.shivamnagpal.users.dtos.request.VerifyOTPRequestDTO;
-import dev.shivamnagpal.users.dtos.response.ResponseWrapper;
+import dev.shivamnagpal.users.dtos.response.wrapper.ResponseWrapper;
 import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.ErrorCode;
 import dev.shivamnagpal.users.exceptions.RestException;

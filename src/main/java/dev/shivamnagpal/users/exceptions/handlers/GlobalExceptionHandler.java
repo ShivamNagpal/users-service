@@ -1,6 +1,6 @@
 package dev.shivamnagpal.users.exceptions.handlers;
 
-import dev.shivamnagpal.users.dtos.response.ResponseWrapper;
+import dev.shivamnagpal.users.dtos.response.wrapper.ResponseWrapper;
 import dev.shivamnagpal.users.dtos.response.wrapper.ErrorResponse;
 import dev.shivamnagpal.users.enums.ErrorCode;
 import dev.shivamnagpal.users.exceptions.RestException;
