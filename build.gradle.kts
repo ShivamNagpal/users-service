@@ -8,7 +8,7 @@ plugins {
     id("com.diffplug.spotless") version "6.22.0"
 }
 
-group = "com.nagpal.shivam"
+group = "dev.shivamnagpal"
 version = "1.0.0"
 
 repositories {
