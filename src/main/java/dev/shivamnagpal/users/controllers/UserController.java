@@ -7,7 +7,7 @@ import dev.shivamnagpal.users.dtos.internal.UserUpdateRequestDTO;
 import dev.shivamnagpal.users.dtos.request.EmailRequestDTO;
 import dev.shivamnagpal.users.dtos.request.LoginRequestDTO;
 import dev.shivamnagpal.users.dtos.request.PasswordUpdateRequestDTO;
-import dev.shivamnagpal.users.dtos.response.ResponseWrapper;
+import dev.shivamnagpal.users.dtos.response.wrapper.ResponseWrapper;
 import dev.shivamnagpal.users.exceptions.handlers.GlobalExceptionHandler;
 import dev.shivamnagpal.users.models.User;
 import dev.shivamnagpal.users.services.JWTService;

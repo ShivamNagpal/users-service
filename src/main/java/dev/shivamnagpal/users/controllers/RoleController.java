@@ -4,7 +4,7 @@ import dev.shivamnagpal.users.core.Controller;
 import dev.shivamnagpal.users.core.RequestPath;
 import dev.shivamnagpal.users.dtos.internal.JWTAuthTokenDTO;
 import dev.shivamnagpal.users.dtos.request.RoleUpdateRequestDTO;
-import dev.shivamnagpal.users.dtos.response.ResponseWrapper;
+import dev.shivamnagpal.users.dtos.response.wrapper.ResponseWrapper;
 import dev.shivamnagpal.users.enums.RoleName;
 import dev.shivamnagpal.users.exceptions.handlers.GlobalExceptionHandler;
 import dev.shivamnagpal.users.services.JWTService;
